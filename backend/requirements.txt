@@ -1,0 +1,28 @@
+# --- Core Framework & Validation ---
+fastapi[all]>=0.110.0      # Includes Uvicorn, Pydantic v2, and Starlette
+pydantic-settings>=2.2.1   # Environment variable validation
+pydantic[email]>=2.6.0      # Required for EmailStr validation in schemas
+python-multipart>=0.0.9    # Handling OAuth2 form data & file uploads
+
+# --- Database & Async Logic ---
+sqlalchemy[asyncio]>=2.0.27 # Async ORM support
+asyncpg>=0.29.0             # High-performance async driver for PostgreSQL
+alembic>=1.13.1             # Database migrations
+
+# --- AI & External APIs ---
+google-genai>=1.70.0       # Gemini 1.5 Pro/Flash SDK
+groq>=0.18.0                # Llama 3 / Mixtral high-speed inference
+httpx>=0.27.0               # Async HTTP client for Workers/Scrapers
+
+# --- Security & Authentication ---
+python-jose[cryptography]>=3.3.0 # JWT token generation/decoding
+passlib[bcrypt]>=1.7.4           # Secure password hashing (Argon2 alternative)
+
+# --- Task Queue & Real-time ---
+celery>=5.3.6               # Background worker engine
+redis>=5.0.3                # Broker for Celery and caching layer
+
+# --- Communication & Utilities ---
+fastapi-mail>=1.4.1         # Async mailer (replacing Flask-Mail/emails)
+python-dotenv>=1.0.1        # Manual .env loading for scripts
+python-dateutil>=2.9.0      # Robust datetime manipulation

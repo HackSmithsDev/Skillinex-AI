@@ -1,0 +1,71 @@
+{
+  "categories": [
+    {
+      "id": "milestones",
+      "label": "System_Milestones",
+      "badges": [
+        {
+          "slug": "init_sync",
+          "title": "Initial_Sync",
+          "desc": "Complete your first neural assessment",
+          "requirement": { "type": "test_count", "value": 1 },
+          "icon": "Zap"
+        },
+        {
+          "slug": "gold_sync",
+          "title": "Gold_Sync",
+          "desc": "Accumulate 1,000+ System XP",
+          "requirement": { "type": "total_xp", "value": 1000 },
+          "icon": "Trophy"
+        },
+        {
+          "slug": "terminal_veteran",
+          "title": "Terminal_Veteran",
+          "desc": "Survive 25 neural assessments",
+          "requirement": { "type": "test_count", "value": 25 },
+          "icon": "Activity"
+        }
+      ]
+    },
+    {
+      "id": "mastery",
+      "label": "Node_Mastery",
+      "badges": [
+        {
+          "slug": "ai_architect",
+          "title": "AI_Architect",
+          "desc": "Score 95%+ in any AI/ML sync",
+          "requirement": { "type": "high_score", "target": "Artificial Intelligence", "value": 95 },
+          "icon": "Brain"
+        },
+        {
+          "slug": "fullstack_daemon",
+          "title": "Fullstack_Daemon",
+          "desc": "Deploy 5 different tech stack nodes",
+          "requirement": { "type": "unique_nodes", "value": 5 },
+          "icon": "Code2"
+        }
+      ]
+    },
+    {
+      "id": "consistency",
+      "label": "Operational_Consistency",
+      "badges": [
+        {
+          "slug": "streak_survivor",
+          "title": "Streak_Survivor",
+          "desc": "Maintain a 7-day learning streak",
+          "requirement": { "type": "streak", "value": 7 },
+          "icon": "Flame"
+        },
+        {
+          "slug": "night_owl",
+          "title": "Night_Ops",
+          "desc": "Complete an assessment between 00:00 and 04:00",
+          "requirement": { "type": "time_window", "value": "late_night" },
+          "icon": "Moon"
+        }
+      ]
+    }
+  ]
+}
