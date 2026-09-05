@@ -4,7 +4,7 @@ import { Alert } from 'react-native';
 
 // PRO-TIP: Replace with your specific Mac IP 
 // Check this via 'ifconfig' on Mac or 'ipconfig' on Windows
-const API_BASE_URL = 'http://192.168.29.56:5050/'; 
+const API_BASE_URL = 'http://skillinex-api.hacksmiths.dev/'; 
 // const API_BASE_URL = 'http://10.163.110.99:5050/'; 
 
 const api = axios.create({
