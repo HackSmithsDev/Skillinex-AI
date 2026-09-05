@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     MAIL_SERVER: Optional[str] = None
 
     # Frontend / CORS Logic
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str = "http://localhost:5174"
     
     @property
     def BACKEND_CORS_ORIGINS(self) -> List[str]:

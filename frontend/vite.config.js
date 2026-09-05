@@ -9,4 +9,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    host: '127.0.0.1',
+    port: 5174,
+    strictPort: true,
+    // Add allowedHosts to permit Cloudflare Tunnel requests:
+    allowedHosts: [
+      'skillinex.hacksmiths.dev',
+      '.hacksmiths.dev', // Allows any subdomain under hacksmiths.dev
+    ],
+  },
 })
