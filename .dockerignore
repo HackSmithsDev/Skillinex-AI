@@ -1,0 +1,30 @@
+# --- Secrets: never bake real env files into the image ---
+.env
+.env.*
+!.env.example
+**/.env.example
+
+# --- Version control & local tooling ---
+.git/
+.gitignore
+.vscode/
+.idea/
+_DOCS/
+
+# --- Dependencies (reinstalled fresh inside the image) ---
+**/node_modules/
+backend/**/__pycache__/
+backend/**/*.pyc
+**/.venv/
+**/venv/
+
+# --- Runtime-generated data (recreated on boot) ---
+data/
+
+# --- Build artifacts not needed as build input ---
+frontend/dist/
+mobile/
+
+# --- OS/editor junk ---
+**/.DS_Store
+*.log

@@ -10,10 +10,11 @@ from app.db.models.user import User, UserCourse
 from app.db.models.courses import Course
 from app.schemas.study import DynamicExecuteRequest, UserEnvironmentOut
 from app.integrations.gemini import gemini_client
+from app.integrations.shared import WANDBOX_COMPILERS
 
 router = APIRouter()
 
-PISTON_URL = "https://emkc.org/api/v2/piston/execute"
+WANDBOX_URL = "https://wandbox.org/api/compile.json"
 
 @router.get("/user-languages", response_model=List[UserEnvironmentOut])
 async def get_user_dynamic_languages(
@@ -57,33 +58,38 @@ async def get_user_dynamic_languages(
 
 
 @router.post("/execute")
-async def execute_dynamic_code(
-    payload: DynamicExecuteRequest,
-    current_user: User = Depends(get_current_user)
-):
+async def execute_dynamic_code(payload: DynamicExecuteRequest):
     """
-    Proxy dynamic code to the Piston engine using AI-resolved runtime context.
+    Proxy dynamic code to the Wandbox execution engine using the best runtime
+    for the selected course or language (Piston's public API now requires whitelisting).
     """
-    # 🤖 AI Engine determines the matching executor
-    piston_lang = await gemini_client.extract_piston_language(payload.raw_context)
-    
-    piston_payload = {
-        "language": piston_lang,
-        "version": "*",
-        "files": [{"content": payload.code}]
+    piston_lang = payload.language or await gemini_client.extract_piston_language(payload.raw_context)
+    compiler = WANDBOX_COMPILERS.get(piston_lang, WANDBOX_COMPILERS["python"])
+
+    wandbox_payload = {
+        "code": payload.code,
+        "compiler": compiler,
     }
-    
+
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(PISTON_URL, json=piston_payload, timeout=12.0)
+            response = await client.post(WANDBOX_URL, json=wandbox_payload, timeout=15.0)
             if response.status_code != 200:
                 raise HTTPException(
                     status_code=status.HTTP_502_BAD_GATEWAY,
-                    detail="Ecosystem compiler cluster rejected runtime payload."
+                    detail="Ecosystem compiler cluster rejected runtime payload.",
                 )
-            return response.json()
+            result = response.json()
+            return {
+                "language": piston_lang,
+                "run": {
+                    "stdout": result.get("program_output", ""),
+                    "stderr": result.get("program_error", "") or result.get("compiler_error", ""),
+                    "code": result.get("status"),
+                },
+            }
         except httpx.RequestError:
             raise HTTPException(
                 status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                detail="Upstream execution environment unreachable."
+                detail="Upstream execution environment unreachable.",
             )

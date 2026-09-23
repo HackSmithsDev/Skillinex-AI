@@ -7,7 +7,6 @@ celery_app = Celery(
     backend=settings.REDIS_URL,
     include=[
         "app.workers.tasks.roadmap.generator",
-        "app.workers.tasks.ai.pdf_engine",
         "app.workers.tasks.email.sender"
     ]
 )

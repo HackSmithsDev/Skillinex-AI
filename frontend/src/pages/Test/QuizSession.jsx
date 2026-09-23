@@ -15,7 +15,6 @@ export default function QuizSession() {
 
   // Mode Detection Flags
   const isReviewMode = location.state?.testData?.reviewMode || false;
-  const savedAnswers = location.state?.testData?.savedAnswers || {};
 
   // State Management
   const [testMetadata, setTestMetadata] = useState(null);

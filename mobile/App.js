@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import {
 
 // System Context
 import { AuthProvider, AuthContext } from './src/context/AuthContext';
+import PreSplash from './src/components/PreSplash';
 
 // --- SCREEN IMPORTS ---
 // Auth Flow
@@ -116,14 +117,7 @@ function RootNavigator() {
 
   // System Boot State
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#0F172A" />
-        <Text className="mt-4 font-black uppercase text-[10px] tracking-widest text-slate-400">
-          Initializing System...
-        </Text>
-      </View>
-    );
+    return <PreSplash />;
   }
 
   return (

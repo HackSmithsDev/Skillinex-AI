@@ -1,6 +1,7 @@
 import os  #  need this for path resolution
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from fastapi.staticfiles import StaticFiles  # 🆕 For mounting the file system volumes
 
 # Import all modular routers from your directory tree
@@ -20,6 +21,8 @@ def create_app() -> FastAPI:
     )
 
     # 1. CORS Setup - Using your .env origins
+    app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],

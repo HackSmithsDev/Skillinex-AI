@@ -1,25 +1,25 @@
 {
   "expo": {
-    "name": "SkillinexMobile",
-    "slug": "SkillinexMobile",
+    "name": "Skillinex",
+    "slug": "skillinex",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png", 
-    
-    "userInterfaceStyle": "dark", 
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#020617"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.hacksmiths.skillinex"
     },
     "android": {
+      "package": "dev.hacksmiths.skillinex",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png", 
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#020617"
       },
       "edgeToEdgeEnabled": true

@@ -7,10 +7,10 @@ from datetime import datetime
 
 class DynamicExecuteRequest(BaseModel):
     """
-    Validates execution matrix payloads. 
-    'raw_context' is used by the AI service to map the specific environment.
+    Validates execution payloads for the online lab sandbox.
     """
-    raw_context: str = Field(..., description="The context name (e.g., course title or tool name) to resolve the runtime")
+    raw_context: str = Field(default="practice", description="The course or topic name used to resolve the runtime")
+    language: Optional[str] = Field(default=None, description="Explicit language override such as python, javascript, java, cpp")
     code: str = Field(..., description="The source code to be executed in the Piston sandbox")
 
 

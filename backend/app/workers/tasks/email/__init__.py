@@ -2,16 +2,18 @@ from fastapi_mail import ConnectionConfig
 from app.core.config import settings
 
 # 1. SMTP Connection Configuration
-# Centralized settings for FastAPI-Mail across all worker tasks.
+# Centralized settings for FastAPI-Mail across all worker tasks. TLS/SSL mode
+# is driven entirely by env (MAIL_USE_TLS / MAIL_USE_SSL), so this works for
+# Gmail-style STARTTLS on 587 or GoDaddy-style direct SSL on 465 without code changes.
 mail_config = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL_USERNAME,
     MAIL_PASSWORD=settings.MAIL_PASSWORD,
     MAIL_FROM=settings.MAIL_FROM,
     MAIL_PORT=settings.MAIL_PORT,
     MAIL_SERVER=settings.MAIL_SERVER,
-    MAIL_FROM_NAME="Skillinex AI",
-    MAIL_STARTTLS=True,
-    MAIL_SSL_TLS=False, # Standard for port 587; set to True if using port 465
+    MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
+    MAIL_STARTTLS=settings.MAIL_USE_TLS,
+    MAIL_SSL_TLS=settings.MAIL_USE_SSL,
     USE_CREDENTIALS=True,
     VALIDATE_CERTS=True
 )

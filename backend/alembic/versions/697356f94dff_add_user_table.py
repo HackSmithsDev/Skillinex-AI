@@ -1,18 +1,18 @@
-"""Initial Skillinex migration
+"""Add user table
 
-Revision ID: d5a921955c7f
+Revision ID: 697356f94dff
 Revises: 
-Create Date: 2026-04-04 15:27:49.883316
+Create Date: 2026-09-22 16:01:08.358098
 
 """
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'd5a921955c7f'
+revision: str = '697356f94dff'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,6 +25,7 @@ def upgrade() -> None:
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('title', sa.String(length=255), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('category', sa.String(length=100), nullable=True),
     sa.Column('thumbnail_url', sa.String(length=500), nullable=True),
     sa.Column('difficulty', sa.String(length=50), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -37,6 +38,10 @@ def upgrade() -> None:
     sa.Column('hashed_password', sa.String(length=255), nullable=False),
     sa.Column('full_name', sa.String(length=255), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
+    sa.Column('bio', sa.Text(), nullable=True),
+    sa.Column('photo_url', sa.String(length=500), nullable=True),
+    sa.Column('age', sa.Integer(), nullable=True),
+    sa.Column('gender', sa.String(length=50), nullable=True),
     sa.Column('xp_points', sa.Integer(), nullable=True),
     sa.Column('tech_stack', sa.JSON(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -75,6 +80,7 @@ def upgrade() -> None:
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('course_id', sa.String(), nullable=False),
+    sa.Column('node_name', sa.String(length=100), nullable=True),
     sa.Column('score', sa.Float(), nullable=False),
     sa.Column('total_questions', sa.Integer(), nullable=True),
     sa.Column('analysis', sa.JSON(), nullable=True),
@@ -82,6 +88,14 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['course_id'], ['courses.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('user_courses',
+    sa.Column('user_id', sa.String(), nullable=False),
+    sa.Column('course_id', sa.String(), nullable=False),
+    sa.Column('enrolled_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['course_id'], ['courses.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('user_id', 'course_id')
     )
     op.create_table('chat_messages',
     sa.Column('id', sa.String(), nullable=False),
@@ -98,10 +112,10 @@ def upgrade() -> None:
     sa.Column('section_id', sa.String(), nullable=False),
     sa.Column('title', sa.String(length=255), nullable=False),
     sa.Column('order', sa.Integer(), nullable=False),
-    sa.Column('content_type', sa.String(length=50), nullable=True),
-    sa.Column('content_url', sa.String(length=500), nullable=True),
+    sa.Column('video_url', sa.String(length=500), nullable=True),
     sa.Column('raw_text', sa.Text(), nullable=True),
-    sa.Column('duration_seconds', sa.Integer(), nullable=True),
+    sa.Column('quiz_data', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+    sa.Column('estimated_minutes', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['section_id'], ['sections.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -109,8 +123,24 @@ def upgrade() -> None:
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('lecture_id', sa.String(), nullable=False),
+    sa.Column('course_id', sa.String(), nullable=True),
+    sa.Column('xp_earned', sa.Integer(), nullable=True),
     sa.Column('status', sa.String(length=50), nullable=True),
     sa.Column('time_spent_seconds', sa.Integer(), nullable=True),
+    sa.Column('last_accessed', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['course_id'], ['courses.id'], ),
+    sa.ForeignKeyConstraint(['lecture_id'], ['lectures.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('user_lecture_progress',
+    sa.Column('id', sa.String(), nullable=False),
+    sa.Column('user_id', sa.String(), nullable=False),
+    sa.Column('lecture_id', sa.String(), nullable=False),
+    sa.Column('is_completed', sa.Boolean(), nullable=True),
+    sa.Column('last_watched_second', sa.Integer(), nullable=True),
+    sa.Column('notes_read', sa.Boolean(), nullable=True),
+    sa.Column('quiz_score', sa.Integer(), nullable=True),
     sa.Column('last_accessed', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['lecture_id'], ['lectures.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
@@ -122,9 +152,11 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table('user_lecture_progress')
     op.drop_table('practice_records')
     op.drop_table('lectures')
     op.drop_table('chat_messages')
+    op.drop_table('user_courses')
     op.drop_table('test_results')
     op.drop_table('sections')
     op.drop_table('feedbacks')

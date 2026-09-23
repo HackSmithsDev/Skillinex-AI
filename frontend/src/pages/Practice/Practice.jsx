@@ -4,44 +4,84 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Code2, Terminal as TerminalIcon, Cpu, Globe, Play, RotateCcw, ChevronRight, Loader2 } from "lucide-react";
+import { Cpu, Play, Loader2 } from "lucide-react";
 import api from "@/api/axios";
 
+const defaultCompilerOptions = [
+  { id: "python", label: "Python 3", course: "Python / AI / Data Science" },
+  { id: "javascript", label: "JavaScript / Node.js", course: "Frontend / Web / Full Stack" },
+  { id: "java", label: "Java", course: "Backend / DSA / Enterprise" },
+  { id: "cpp", label: "C++", course: "Competitive Programming / Systems" },
+  { id: "csharp", label: "C#", course: ".NET / Backend" },
+  { id: "go", label: "Go", course: "Cloud / APIs / DevOps" },
+  { id: "kotlin", label: "Kotlin", course: "Android / JVM" },
+  { id: "php", label: "PHP", course: "Web Backend" },
+  { id: "swift", label: "Swift", course: "iOS / Apple" },
+];
+
 export default function Practice() {
+  const [compilerOptions, setCompilerOptions] = useState(defaultCompilerOptions);
   const [language, setLanguage] = useState("python");
   const [code, setCode] = useState("# Initializing Terminal...\ndef and_gate_logic(a, b):\n    return a and b");
   const [output, setOutput] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
 
-  // 1. EXECUTION LOGIC (Bridge to Piston/Judge0)
+  useEffect(() => {
+    const loadCompilerOptions = async () => {
+      try {
+        const { data } = await api.get("/study/practice/user-languages");
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((item) => ({
+            id: item.id,
+            label: item.display_name || item.id,
+            course: item.origin || "Skillinex Course",
+          }));
+          setCompilerOptions(mapped);
+          if (!mapped.some((item) => item.id === language)) {
+            setLanguage(mapped[0].id);
+          }
+        }
+      } catch (error) {
+        console.warn("Using default compiler list because the backend language endpoint is unavailable.", error);
+      }
+    };
+
+    loadCompilerOptions();
+  }, []);
+
   const runCode = async () => {
     setIsRunning(true);
-    const log = (msg, type = "info") => setOutput(prev => [...prev, { msg, type, time: new Date().toLocaleTimeString() }]);
-    
+    const log = (msg, type = "info") =>
+      setOutput((prev) => [...prev, { msg, type, time: new Date().toLocaleTimeString() }]);
+
     try {
-      const response = await fetch("https://emkc.org/api/v2/piston/execute", {
-        method: "POST",
-        body: JSON.stringify({
-          language: language,
-          version: "*",
-          files: [{ content: code }],
-        }),
+      const { data } = await api.post("/study/practice/execute", {
+        raw_context: compilerOptions.find((option) => option.id === language)?.course || "practice",
+        language,
+        code,
       });
-      const result = await response.json();
-      
-      if (result.run.stdout) {
-        log(result.run.stdout, "success");
-        
-        // LOGIC: If the code produced the correct output, sync with Skillinex DB
-        // For the 'AND Gate' example, we'd check if output matches expected results
-        if (result.run.stdout.trim() === "1") { 
-          await syncLabSuccess(); 
+
+      const stdout = data?.run?.stdout || "";
+      const stderr = data?.run?.stderr || "";
+      const codeOutput = data?.run?.code;
+
+      if (stdout) {
+        log(stdout.trim(), "success");
+        if (stdout.trim() === "1") {
+          await syncLabSuccess();
         }
       }
-      if (result.run.stderr) log(result.run.stderr, "error");
 
+      if (stderr) {
+        log(stderr.trim(), "error");
+      }
+
+      if (!stdout && !stderr && codeOutput !== undefined) {
+        log("Execution completed without output.", "system");
+      }
     } catch (error) {
-      log("Kernel Panic: Connection lost.", "error");
+      const detail = error.response?.data?.detail || "Kernel Panic: Connection lost.";
+      log(detail, "error");
     } finally {
       setIsRunning(false);
     }
@@ -52,9 +92,8 @@ export default function Practice() {
       await api.post("/study/practice/verify-lab", {
         task_id: "logic-gate-01",
         course_id: "cse-ai-ml",
-        success: true
+        success: true,
       });
-      // Optional: Trigger a "Badge Unlocked" toast here
     } catch (err) {
       console.error("Failed to sync XP", err);
     }
@@ -62,8 +101,6 @@ export default function Practice() {
 
   return (
     <div className="min-h-screen bg-white p-4 lg:p-8 font-sans selection:bg-slate-900 selection:text-white overflow-hidden">
-      
-      {/* HEADER SECTION (Keep your existing header logic) */}
       <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6 border-b border-slate-100 pb-8">
         <div className="flex items-center gap-5">
           <div className="bg-slate-900 p-3 rounded-none text-white">
@@ -77,43 +114,45 @@ export default function Practice() {
 
         <div className="flex items-center gap-3">
           <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger className="w-[180px] bg-slate-900 text-white border-none font-black text-[10px] uppercase tracking-widest h-11 rounded-none">
+            <SelectTrigger className="w-[220px] bg-slate-900 text-white border-none font-black text-[10px] uppercase tracking-widest h-11 rounded-none">
               <SelectValue placeholder="Select Engine" />
             </SelectTrigger>
             <SelectContent className="bg-slate-900 text-white rounded-none border-none">
-              <SelectItem value="python">Python_3.12</SelectItem>
-              <SelectItem value="javascript">Node.js_LTS</SelectItem>
-              <SelectItem value="cpp">C++_20</SelectItem>
+              {compilerOptions.map((option) => (
+                <SelectItem key={option.id} value={option.id}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          
-          <Button 
-            onClick={runCode} 
+
+          <Button
+            onClick={runCode}
             disabled={isRunning}
             className="bg-emerald-500 text-slate-950 font-black uppercase tracking-widest rounded-none h-11 px-8 hover:bg-emerald-400"
           >
-            {isRunning ? <Loader2 className="animate-spin" size={16} /> : <Play size={14} className="mr-2" />} 
+            {isRunning ? <Loader2 className="animate-spin" size={16} /> : <Play size={14} className="mr-2" />}
             Run_Sync
           </Button>
         </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[75vh]">
-        {/* LEFT: TASK PANEL */}
         <aside className="lg:col-span-3 space-y-4">
           <Card className="rounded-none border-2 border-slate-900 h-full">
             <CardContent className="p-6">
               <Badge className="bg-slate-900 text-white rounded-none mb-4 text-[9px] font-black uppercase">Current Task</Badge>
               <h3 className="text-lg font-black italic uppercase mb-2">Binary Sync Logic</h3>
               <p className="text-xs text-slate-500 leading-relaxed mb-6">
-                Implement <code className="bg-slate-100 px-1">and_gate_logic(a, b)</code>. 
-                Inputs will be 0 or 1.
+                Implement <code className="bg-slate-100 px-1">and_gate_logic(a, b)</code>. Inputs will be 0 or 1.
               </p>
+              <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                Recommended runtime: <span className="text-slate-900 font-black">{compilerOptions.find((item) => item.id === language)?.label || "Python"}</span>
+              </div>
             </CardContent>
           </Card>
         </aside>
 
-        {/* RIGHT: IDE & TERMINAL */}
         <main className="lg:col-span-9 flex flex-col gap-4">
           <div className="flex-1 border-2 border-slate-900 overflow-hidden relative">
             <div className="absolute top-0 right-0 z-10 bg-slate-900 text-white px-4 py-1 text-[8px] font-black uppercase tracking-widest">

@@ -57,3 +57,13 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# runtime-generated storage (profile pics, cached AI roadmaps) — recreated automatically on boot
+data/
+
+# Celery runtime artifacts
+celerybeat-schedule
+celerybeat.pid
+
+# misc local docs/assets not meant for the repo
+_DOCS/
