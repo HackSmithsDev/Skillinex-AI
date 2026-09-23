@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     # AI Integration Keys
     GROQ_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
     GEMINI_MODEL: str = "gemini-2.0-flash"
 
     # SMTP Configuration — flags let this target Gmail (STARTTLS/587) or a
