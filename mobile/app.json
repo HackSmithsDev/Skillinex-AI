@@ -14,7 +14,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "dev.hacksmiths.skillinex"
+      "bundleIdentifier": "dev.hacksmiths.skillinex",
+      "appleTeamId": "WS542VN5TH"
     },
     "android": {
       "package": "dev.hacksmiths.skillinex",
