@@ -27,6 +27,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.svg"
-    }
+    },
+    "plugins": [
+      "expo-status-bar"
+    ]
   }
 }

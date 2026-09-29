@@ -1,3 +1,4 @@
+import "./global.css";
 import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,7 +13,6 @@ import {
 
 // System Context
 import { AuthProvider, AuthContext } from './src/context/AuthContext';
-import PreSplash from './src/components/PreSplash';
 
 // --- SCREEN IMPORTS ---
 // Auth Flow
@@ -114,11 +114,6 @@ function MainTabs({ navigation }) {
 // 3. ROOT NAVIGATION (The Logic Switch)
 function RootNavigator() {
   const { user, loading } = useContext(AuthContext);
-
-  // System Boot State
-  if (loading) {
-    return <PreSplash />;
-  }
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
