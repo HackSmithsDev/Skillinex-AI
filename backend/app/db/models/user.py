@@ -27,6 +27,7 @@ class User(Base):
     bio = Column(Text, nullable=True)
     photo_url = Column(String(500), nullable=True)
     age = Column(Integer, nullable=True)
+    experience = Column(Text, nullable=True)  # Free-text background used to personalise onboarding suggestions
     gender = Column(String(50), nullable=True)  # e.g., "Male", "Female", "Non-binary", "Prefer not to say"
     
     # GAMIFICATION ENGINE

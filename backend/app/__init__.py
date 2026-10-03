@@ -10,6 +10,7 @@ from app.routers.auth import router as auth_router
 from app.routers.user import router as user_router
 from app.routers.study import router as study_router
 from app.routers.api import router as api_router
+from app.routers.courses import router as courses_router
 from app.core.config import settings
 
 def create_app() -> FastAPI:
@@ -60,6 +61,7 @@ def create_app() -> FastAPI:
     app.include_router(user_router, prefix="/user", tags=["User Dashboard"])
     app.include_router(study_router, prefix="/study", tags=["Learning & Progress"])
     app.include_router(api_router, prefix="/api", tags=["AI Core Services"])
+    app.include_router(courses_router, prefix="/courses", tags=["Courses"])
 
     @app.get("/")
     async def root():

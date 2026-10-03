@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../api/axios';
+import api, { TOKEN_KEY, setUnauthorizedHandler } from '../api/axios';
 
 export const AuthContext = createContext();
 
@@ -8,46 +8,41 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // UPDATED: Now accepts an optional manualToken to bypass AsyncStorage lag
-  const fetchUser = async (manualToken = null) => {
+  const fetchUser = async () => {
     try {
-      const token = manualToken || await AsyncStorage.getItem('token');
-      if (!token) return;
-
-      const res = await api.get('/user/me', {
-        headers: manualToken ? { Authorization: `Bearer ${manualToken}` } : {}
-      });
+      const token = await AsyncStorage.getItem(TOKEN_KEY);
+      if (!token) return null;
+      const res = await api.get('/user/me');
       setUser(res.data);
+      return res.data;
     } catch (err) {
       console.log("Terminal_Auth_Sync_Failed:", err);
-      // Only logout if we weren't just handed a fresh token that failed for other reasons
-      if (!manualToken) await logout(); 
+      await logout();
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    setUnauthorizedHandler(() => setUser(null));
     const hydrate = async () => {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem(TOKEN_KEY);
       if (token) await fetchUser();
       else setLoading(false);
     };
     hydrate();
   }, []);
 
-  const login = async (token, userData) => {
-    try {
-      await AsyncStorage.setItem('token', token);
-      setUser(userData);
-    } catch (e) {
-      console.error("Storage_Error:", e);
-    }
+  // Backend returns only the token; the profile is loaded from /user/me.
+  const login = async (token) => {
+    await AsyncStorage.setItem(TOKEN_KEY, token);
+    return fetchUser();
   };
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem(TOKEN_KEY);
       setUser(null);
     } catch (e) {
       console.error("Logout_Error:", e);

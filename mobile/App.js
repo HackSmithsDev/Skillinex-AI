@@ -1,4 +1,5 @@
 import "./global.css";
+import "./src/theme/interop";
 import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +14,7 @@ import {
 
 // System Context
 import { AuthProvider, AuthContext } from './src/context/AuthContext';
+import { useThemeColors } from './src/theme/useThemeColors';
 
 // --- SCREEN IMPORTS ---
 // Auth Flow
@@ -39,10 +41,10 @@ const Stack = createNativeStackNavigator();
 
 // 1. TOP BAR COMPONENT (The Persistent Identity)
 const SkillinexHeader = ({ navigation }) => (
-  <SafeAreaView className="bg-white border-b-4 border-slate-900">
+  <SafeAreaView className="bg-card border-b-4 border-primary">
     <View className="px-6 py-4 flex-row justify-between items-center">
       <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'HOME' })}>
-        <Text className="text-2xl font-black italic tracking-tighter text-slate-900">
+        <Text className="text-2xl font-black italic tracking-tighter text-foreground">
           SKILLINEX<Text className="text-primary">.SYS</Text>
         </Text>
       </TouchableOpacity>
@@ -50,9 +52,9 @@ const SkillinexHeader = ({ navigation }) => (
       {/* Profile Node Link */}
       <TouchableOpacity 
         onPress={() => navigation.navigate('Profile')}
-        className="h-10 w-10 bg-white border-2 border-slate-900 justify-center items-center shadow-[3px_3px_0px_0px_rgba(15,23,42,1)]"
+        className="h-10 w-10 bg-card border-2 border-primary justify-center items-center shadow-[3px_3px_0px_0px_rgb(var(--primary))]"
       >
-        <UserIcon size={20} color="#0F172A" strokeWidth={2.5} />
+        <UserIcon size={20} strokeWidth={2.5} className="text-primary" />
       </TouchableOpacity>
     </View>
   </SafeAreaView>
@@ -60,6 +62,7 @@ const SkillinexHeader = ({ navigation }) => (
 
 // 2. MAIN NAVIGATION (The 5-Tab Command Center)
 function MainTabs({ navigation }) {
+  const colors = useThemeColors();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -69,11 +72,11 @@ function MainTabs({ navigation }) {
           paddingBottom: 30,
           paddingTop: 12,
           borderTopWidth: 4,
-          borderTopColor: '#0F172A',
-          backgroundColor: '#FFFFFF',
+          borderTopColor: colors.primary,
+          backgroundColor: colors.card,
         },
-        tabBarActiveTintColor: '#10B981', // Emerald-500
-        tabBarInactiveTintColor: '#94A3B8', // Slate-400
+        tabBarActiveTintColor: colors.success,
+        tabBarInactiveTintColor: colors.subtle,
         tabBarLabelStyle: { 
           fontSize: 10, 
           fontWeight: '900', 

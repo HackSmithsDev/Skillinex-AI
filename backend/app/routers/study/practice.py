@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
+from pydantic import BaseModel
 
 from app.db.session import get_db
 from app.core.security import get_current_user
@@ -93,3 +94,24 @@ async def execute_dynamic_code(payload: DynamicExecuteRequest):
                 status_code=status.HTTP_504_GATEWAY_TIMEOUT,
                 detail="Upstream execution environment unreachable.",
             )
+
+
+class LabVerifyRequest(BaseModel):
+    task_id: str
+    course_id: str | None = None
+    success: bool = True
+
+LAB_XP = 10
+
+@router.post("/verify-lab")
+async def verify_lab(
+    data: LabVerifyRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Awards XP for a successfully completed lab task."""
+    if not data.success:
+        return {"xp_awarded": 0, "xp_points": current_user.xp_points or 0}
+    current_user.xp_points = (current_user.xp_points or 0) + LAB_XP
+    await db.commit()
+    return {"xp_awarded": LAB_XP, "xp_points": current_user.xp_points}

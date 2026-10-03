@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     GROQ_MODEL: str = "openai/gpt-oss-120b"
-    GEMINI_MODEL: str = "gemini-2.0-flash"
+    GEMINI_MODEL: str = "gemini-3.8-flash"
 
     # SMTP Configuration — flags let this target Gmail (STARTTLS/587) or a
     # provider like GoDaddy's smtpout.secureserver.net (SSL/465) via env only.

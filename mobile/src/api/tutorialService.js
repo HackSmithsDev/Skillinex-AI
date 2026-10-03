@@ -1,23 +1,10 @@
-import axiosInstance from './axios';
+import api from './axios';
 
 const tutorialService = {
-  // Fetch all available course roadmaps
-  getLearningVault: async () => {
-    const response = await axiosInstance.get('/tutorials/vault/');
-    return response.data;
-  },
-
-  // Get a specific lecture node
-  getLectureDetails: async (courseId, lectureId) => {
-    const response = await axiosInstance.get(`/tutorials/${courseId}/${lectureId}/`);
-    return response.data;
-  },
-
-  // Mark node as completed (Update Neural Map)
-  completeNode: async (nodeId) => {
-    const response = await axiosInstance.post('/tutorials/complete/', { nodeId });
-    return response.data;
-  }
+  getLearningVault: async () => (await api.get('/study/tutorials/my-vault')).data,
+  getCourse: async (courseId) => (await api.get(`/study/tutorials/courses/${courseId}`)).data,
+  getLecture: async (lectureId) => (await api.get(`/study/tutorials/lecture/${lectureId}`)).data,
+  completeLecture: async (lectureId) => (await api.post(`/study/tutorials/lecture/${lectureId}/complete`)).data,
 };
 
 export default tutorialService;

@@ -1,27 +1,13 @@
-import axiosInstance from './axios';
+import api from './axios';
 
 const quizService = {
-  // Initialize a new assessment session
-  initializeAssessment: async (config) => {
-    // config includes { level, units, nodeId }
-    const response = await axiosInstance.post('/quiz/initialize/', config);
-    return response.data; // Should return the Quiz ID and first question
-  },
-
-  // Submit answer and get next question
-  submitAnswer: async (quizId, questionId, selection) => {
-    const response = await axiosInstance.post(`/quiz/${quizId}/sync/`, {
-      question_id: questionId,
-      answer: selection
-    });
-    return response.data;
-  },
-
-  // Finalize sync and calculate XP
-  finalizeSync: async (quizId) => {
-    const response = await axiosInstance.get(`/quiz/${quizId}/results/`);
-    return response.data;
-  }
+  // config: { node, depth, units, scope } -> { session_id, questions, node_name }
+  generate: async (config) => (await api.post('/study/test/generate', config)).data,
+  sync: async (sessionId) => (await api.get(`/study/test/sync/${sessionId}`)).data,
+  // result: { node_name, score, total_questions, analysis }
+  submit: async (sessionId, result) =>
+    (await api.post('/study/test/submit', result, { params: { session_id: sessionId } })).data,
+  history: async () => (await api.get('/study/test/history')).data,
 };
 
 export default quizService;

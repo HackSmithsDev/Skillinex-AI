@@ -136,8 +136,8 @@ export default function QuizSession() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <Loader2 className="animate-spin text-slate-900" size={48} />
+      <div className="min-h-screen flex items-center justify-center bg-card">
+        <Loader2 className="animate-spin text-foreground" size={48} />
       </div>
     );
   }
@@ -156,28 +156,28 @@ export default function QuizSession() {
     : [];
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-6 lg:p-16">
+    <div className="min-h-screen bg-surface/50 p-6 lg:p-16">
       <div className="max-w-4xl mx-auto">
         
         {/* TOP STATUS BAR */}
         <div className="flex justify-between items-end mb-8">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Target Node</span>
-            <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-subtle">Target Node</span>
+            <h2 className="text-2xl font-black uppercase italic tracking-tighter text-foreground">
               {testMetadata?.node_name}
             </h2>
           </div>
           <div className="text-right">
-             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 italic">Progress</span>
+             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-subtle italic">Progress</span>
              <p className="text-xl font-black italic tracking-tighter tabular-nums">
                 {currentStep + 1} / {questions.length}
              </p>
           </div>
         </div>
 
-        <Card className="shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] border-none rounded-none bg-white">
+        <Card className="shadow-[0_40px_80px_-15px_var(--shadow-ink)] border-none rounded-none bg-card">
           <CardHeader className="p-0">
-             <Progress value={progress} className="h-1 rounded-none bg-slate-100 accent-slate-900" />
+             <Progress value={progress} className="h-1 rounded-none bg-muted accent-foreground" />
           </CardHeader>
 
           <CardContent className="p-10 lg:p-16 min-h-[450px]">
@@ -192,15 +192,15 @@ export default function QuizSession() {
                 <div className="space-y-4">
                     <div className="flex items-center gap-2">
                         {isReviewMode ? (
-                          <Eye size={14} className="text-blue-500" />
+                          <Eye size={14} className="text-info" />
                         ) : (
-                          <Zap size={14} className="text-yellow-500 fill-yellow-500" />
+                          <Zap size={14} className="text-highlight fill-highlight" />
                         )}
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-subtle">
                             {isReviewMode ? "Diagnostic Review Stream" : "Neural Query"}
                         </span>
                     </div>
-                    <h3 className="text-3xl lg:text-4xl font-black text-slate-900 leading-[1.1] tracking-tight">
+                    <h3 className="text-3xl lg:text-4xl font-black text-foreground leading-[1.1] tracking-tight">
                         {currentQuestion?.question}
                     </h3>
                 </div>
@@ -217,15 +217,15 @@ export default function QuizSession() {
                     const isCorrect = currentQuestion?.answer === optionKeyString;
 
                     // Compute dynamic stylistic variants depending on runtime execution engine mode
-                    let optionStyles = "border-slate-100 peer-data-[state=checked]:border-slate-900 peer-data-[state=checked]:bg-slate-900 peer-data-[state=checked]:text-white hover:bg-slate-50 text-slate-900";
+                    let optionStyles = "border-muted peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground hover:bg-surface text-foreground";
                     
                     if (isReviewMode) {
                       if (isCorrect) {
-                        optionStyles = "border-emerald-500 bg-emerald-50 text-emerald-900 font-black";
+                        optionStyles = "border-success bg-success-subtle text-success-strong font-black";
                       } else if (isSelected && !isCorrect) {
-                        optionStyles = "border-red-500 bg-red-50 text-red-900 opacity-90 line-through";
+                        optionStyles = "border-danger bg-danger-subtle text-danger-strong opacity-90 line-through";
                       } else {
-                        optionStyles = "border-slate-100 bg-white text-slate-400 opacity-40 cursor-default";
+                        optionStyles = "border-muted bg-card text-subtle opacity-40 cursor-default";
                       }
                     }
 
@@ -241,10 +241,10 @@ export default function QuizSession() {
                           <div className="flex justify-between items-center w-full">
                             <span>{opt}</span>
                             {isReviewMode && isCorrect && (
-                              <span className="text-[9px] bg-emerald-500 text-white font-black px-2 py-0.5 rounded-none tracking-normal not-italic">CORRECT</span>
+                              <span className="text-[9px] bg-success text-primary-foreground font-black px-2 py-0.5 rounded-none tracking-normal not-italic">CORRECT</span>
                             )}
                             {isReviewMode && isSelected && !isCorrect && (
-                              <span className="text-[9px] bg-red-500 text-white font-black px-2 py-0.5 rounded-none tracking-normal not-italic">FAULT_INPUT</span>
+                              <span className="text-[9px] bg-danger text-primary-foreground font-black px-2 py-0.5 rounded-none tracking-normal not-italic">FAULT_INPUT</span>
                             )}
                           </div>
                         </Label>
@@ -256,19 +256,19 @@ export default function QuizSession() {
             </AnimatePresence>
           </CardContent>
 
-          <CardFooter className="p-10 border-t border-slate-50 flex justify-between items-center bg-white">
+          <CardFooter className="p-10 border-t border-surface flex justify-between items-center bg-card">
             {/* Left Button Block: Allow navigation backtracking if reviewing */}
             <div>
               {isReviewMode && currentStep > 0 ? (
                 <Button 
                   variant="outline"
                   onClick={handlePrevious}
-                  className="h-16 px-8 rounded-none border-2 border-slate-900 font-black uppercase tracking-wider text-xs hover:bg-slate-900 hover:text-white transition-all"
+                  className="h-16 px-8 rounded-none border-2 border-primary font-black uppercase tracking-wider text-xs hover:bg-primary hover:text-primary-foreground transition-all"
                 >
                   ← Back
                 </Button>
               ) : (
-                <div className="flex items-center gap-2 text-slate-300">
+                <div className="flex items-center gap-2 text-line-strong">
                     <AlertCircle size={14} />
                     <p className="text-[10px] font-black uppercase tracking-widest">
                        {isReviewMode ? "Audit Lock: Mutations Prohibited" : "Caution: Sync permanent after submission"}
@@ -281,8 +281,8 @@ export default function QuizSession() {
                 size="lg" 
                 className={`h-16 px-12 text-sm font-black uppercase tracking-[0.2em] rounded-none transition-all duration-500 ${
                     !selectedAnswers[currentStep] && !isReviewMode
-                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
-                      : 'bg-slate-900 hover:bg-yellow-400 hover:text-slate-900 text-white'
+                      ? 'bg-border text-subtle cursor-not-allowed' 
+                      : 'bg-primary hover:bg-highlight hover:text-foreground text-primary-foreground'
                 }`}
                 onClick={handleNext}
                 disabled={(!selectedAnswers[currentStep] && !isReviewMode) || isSubmitting}
@@ -308,12 +308,6 @@ export default function QuizSession() {
             </span>
         </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        .peer-data-\[state\=checked\]\:border-slate-900[data-state=checked] {
-          border-color: #0f172a !important;
-        }
-      `}} />
     </div>
   );
 }

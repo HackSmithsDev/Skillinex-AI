@@ -13,7 +13,8 @@ from app.core import security
 from app.db.session import get_db
 from app.db.models import User, Course
 from app.utils.redis import set_otp, get_otp, delete_otp
-from app.schemas.user import LoginRequest, UserOut, Token, PasswordResetRequest, PasswordResetConfirm
+from app.integrations.groq import groq_client
+from app.schemas.user import InterestSuggestRequest, InterestSuggestionList, LoginRequest, UserOut, Token, PasswordResetRequest, PasswordResetConfirm
 from app.workers.tasks.roadmap import generate_full_curriculum
 from app.workers.tasks.email import (
     send_welcome_email, 
@@ -53,6 +54,34 @@ async def check_email(email: str, db: AsyncSession = Depends(get_db)):
     }
 
 
+# --- 1b. AI INTEREST SUGGESTIONS (unauthenticated, used in signup step 3) ---
+FALLBACK_INTERESTS = [
+    {"name": n, "level": "Beginner", "reason": ""}
+    for n in ["Python", "JavaScript", "React", "Data Science", "AI/ML", "UI/UX", "FastAPI", "Django"]
+]
+
+
+@router.post("/suggest-interests", response_model=InterestSuggestionList)
+async def suggest_interests(data: InterestSuggestRequest):
+    """Suggests learning interests (with a starting level) from the user's background.
+    Falls back to a static list if the AI provider is unavailable."""
+    prompt = (
+        "You are a career-aware learning advisor. Based on the user's background below, suggest 8 "
+        "specific technology or skill topics they should learn, each with a starting level "
+        "(exactly one of Beginner, Intermediate, Pro) matching their experience, and a reason under 20 words.\n"
+        'Respond as JSON: {"interests":[{"name":"","level":"","reason":""}]}\n\n'
+        f"Age: {data.age or 'unknown'}\nBackground: {data.experience.strip()}"
+    )
+    try:
+        result = await groq_client.get_structured_response(prompt, InterestSuggestionList)
+        items = [i for i in result.interests if i.level in {"Beginner", "Intermediate", "Pro"}][:10]
+        if items:
+            return InterestSuggestionList(interests=items)
+    except Exception:
+        pass
+    return InterestSuggestionList(interests=FALLBACK_INTERESTS)
+
+
 # --- 2. MULTIPART ONBOARDING SIGNUP LAYER ---
 @router.post("/signup", response_model=UserOut)
 async def signup(
@@ -62,6 +91,7 @@ async def signup(
     age: int = Form(...),
     gender: str = Form(...),
     bio: str = Form(""),
+    experience: str = Form(""),
     tech_stack: str = Form("{}"),  # Deserialized from stringified JSON block sent via client state
     file: UploadFile = File(None), # Optional user avatar image payload attachment
     db: AsyncSession = Depends(get_db)
@@ -119,20 +149,7 @@ async def signup(
                 detail="DISK_WRITE_IO_FAULT: Onboarding multipart stream write failure."
             )
 
-    # 5. Core Roadmap Pre-configuration
-    level = "Beginner"
-    primary_topic = "Full Stack Development"
-    target_title = f"Mastering {primary_topic} [{level}]"
-
-    # Eager load relationships to prevent lazy load sync drops
-    course_query = await db.execute(
-        select(Course)
-        .where(Course.title == target_title)
-        .options(selectinload(Course.enrolled_users))
-    )
-    existing_course = course_query.scalars().first()
-
-    # 6. Commit Context Block Data straight to Database Models
+    # 5. Create the user
     new_user = User(
         email=email,
         full_name=full_name,
@@ -141,37 +158,53 @@ async def signup(
         photo_url=photo_url_path,
         age=age,
         gender=gender,
-        tech_stack=parsed_tech_stack, # Overwrite default empty structure with dynamic selections
+        experience=experience.strip() or None,
+        tech_stack=parsed_tech_stack,
         xp_points=100,
         enrolled_courses=[]
     )
     db.add(new_user)
     await db.flush()
 
-    # 7. Map out Core Structural Course Nodes
-    if existing_course:
-        existing_course.enrolled_users.append(new_user)
-    else:
-        new_course = Course(
-            title=target_title,
-            description=f"A personalized {level} roadmap for {primary_topic}.",
-            category=primary_topic,
-            difficulty=level,
-            enrolled_users=[new_user]
+    # 6. AI-suggested courses: one roadmap per chosen interest (max 3)
+    level_map = {"Beginner": "Beginner", "Intermediate": "Intermediate", "Pro": "Advanced"}
+    interests = [(str(k).strip(), v) for k, v in parsed_tech_stack.items() if str(k).strip()][:3]
+    if not interests:
+        interests = [("Full Stack Development", "Beginner")]
+
+    new_courses = []
+    for topic, lvl in interests:
+        level = level_map.get(lvl, "Beginner")
+        target_title = f"Mastering {topic} [{level}]"
+        course_query = await db.execute(
+            select(Course)
+            .where(Course.title == target_title)
+            .options(selectinload(Course.enrolled_users))
         )
-        db.add(new_course)
-        await db.flush()
-        
-        # Deploy backgrounds asynchronous tasks onto Celery workers
-        generate_full_curriculum.delay(
-            course_id=new_course.id, 
-            topic=primary_topic, 
-            difficulty=level 
-        )
+        course = course_query.scalars().first()
+        if course:
+            course.enrolled_users.append(new_user)
+        else:
+            course = Course(
+                title=target_title,
+                description=f"A personalized {level} roadmap for {topic}.",
+                category=topic,
+                difficulty=level,
+                enrolled_users=[new_user]
+            )
+            db.add(course)
+            await db.flush()
+            new_courses.append((course.id, topic, level))
 
     await db.commit()
     await db.refresh(new_user)
-    
+
+    for course_id, topic, level in new_courses:
+        try:
+            generate_full_curriculum.delay(course_id=course_id, topic=topic, difficulty=level)
+        except Exception:
+            pass
+
     # Broadcast welcome transaction events 
     send_welcome_email.delay(new_user.email, new_user.full_name)
     

@@ -5,10 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from anyio.to_thread import run_sync
 
 from app.db.session import get_db
-from app.db.models.user import User
+from app.db.models.user import User, Feedback
+from pydantic import BaseModel, Field
 from app.core.security import get_current_user, get_password_hash, verify_password
 from app.schemas.user import UserOut, UserUpdate, PasswordChange, AccountDeleteRequest
-from app.workers.tasks.email import send_reset_success_email, send_delete_account_email
+from app.workers.tasks.email import send_reset_success_email, send_delete_account_email, send_support_ticket_email
 
 router = APIRouter()
 
@@ -147,3 +148,23 @@ async def delete_account(
     send_delete_account_email.delay(email, name)
     
     return None
+
+
+class FeedbackCreate(BaseModel):
+    comment: str = Field(..., min_length=1, max_length=4000)
+    rating: int | None = Field(default=None, ge=1, le=5)
+    context: str | None = Field(default="profile", max_length=100)
+
+@router.post("/feedback", status_code=status.HTTP_201_CREATED)
+async def submit_feedback(
+    data: FeedbackCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    db.add(Feedback(user_id=current_user.id, comment=data.comment, rating=data.rating, context=data.context))
+    await db.commit()
+    try:
+        send_support_ticket_email.delay(current_user.email, current_user.full_name or "User", "Feedback", data.comment)
+    except Exception:
+        pass
+    return {"msg": "Feedback received"}

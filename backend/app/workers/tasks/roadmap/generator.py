@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from celery import shared_task
+from groq import APIConnectionError, APITimeoutError
 from app.integrations.groq import groq_client
 from app.db.session import AsyncSessionLocal
 
@@ -10,7 +11,13 @@ from .fetching import save_roadmap_to_db
 
 logger = logging.getLogger(__name__)
 
-@shared_task(name="generate_full_curriculum")
+@shared_task(
+    name="generate_full_curriculum",
+    autoretry_for=(APIConnectionError, APITimeoutError),
+    retry_backoff=10,
+    retry_backoff_max=120,
+    max_retries=4,
+)
 def generate_full_curriculum(course_id: str, topic: str, difficulty: str):
     """
     Isolated entry point for Celery worker. Spawns an explicit 
@@ -42,7 +49,7 @@ async def run_generator_pipeline(course_id: str, topic: str, difficulty: str) ->
     compiled_roadmap = {
         "title": skeleton.title,
         "category": skeleton.category,
-        "thumbnail_url": skeleton.thumbnail_url,
+        "thumbnail_url": None,
         "description": skeleton.description,
         "difficulty": difficulty,
         "sections": []
@@ -62,7 +69,18 @@ async def run_generator_pipeline(course_id: str, topic: str, difficulty: str) ->
                 f"Provide a deep-dive markdown guide and 10 MCQs."
             )
             
-            content = await groq_client.get_structured_response(lecture_prompt, LectureContentSchema)
+            content = None
+            for attempt in range(3):
+                try:
+                    content = await groq_client.get_structured_response(lecture_prompt, LectureContentSchema)
+                    break
+                except (APIConnectionError, APITimeoutError):
+                    raise
+                except Exception as exc:
+                    logger.warning(f"[AI Retry] Lecture '{l_title}' attempt {attempt + 1}/3 failed: {str(exc)[:200]}")
+                    await asyncio.sleep(1)
+            if content is None:
+                logger.error(f"[AI Skip] Lecture '{l_title}' could not be generated; skipping.")
             
             if content:
                 current_section["lectures"].append({

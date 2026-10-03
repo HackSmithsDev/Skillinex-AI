@@ -53,7 +53,7 @@ function App() {
           Navbar and Footer will silently return null on the landing page 
           based on the logic we wrote inside them.
         */}
-        <div className="min-h-screen flex flex-col bg-[#F8FAFC] selection:bg-primary/10 selection:text-primary">
+        <div className="min-h-screen flex flex-col bg-surface selection:bg-primary/10 selection:text-primary">
           <Navbar />
           
           <main className="flex-1">

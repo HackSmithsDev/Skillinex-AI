@@ -2,46 +2,58 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
-// PRO-TIP: Replace with your specific Mac IP 
-// Check this via 'ifconfig' on Mac or 'ipconfig' on Windows
-const API_BASE_URL = 'https://skillinex-api.hacksmiths.dev/'; 
-// const API_BASE_URL = 'http://10.163.110.99:5050/'; 
+export const TOKEN_KEY = 'token';
+
+// Override per environment with EXPO_PUBLIC_API_URL (e.g. http://<LAN-IP>:5050)
+const API_BASE_URL = (process.env.EXPO_PUBLIC_API_URL || 'https://skillinex-api.hacksmiths.dev').replace(/\/+$/, '');
+
+export const getApiBaseUrl = () => API_BASE_URL;
+
+// Backend returns relative paths such as /uploads/profile_pics/x.png
+export const resolveMediaUrl = (path) => {
+  if (!path) return null;
+  return /^https?:\/\//i.test(path) ? path : `${API_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000, // 15s timeout for AI generation tasks
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  timeout: 60000, // AI generation (tests, roadmaps) can be slow
+  headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('userToken');
-  if (token) {
+  const token = await AsyncStorage.getItem(TOKEN_KEY);
+  if (token && !config.headers.Authorization) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 }, (error) => Promise.reject(error));
 
+let onUnauthorized = null;
+export const setUnauthorizedHandler = (fn) => { onUnauthorized = fn; };
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // 1. Check for Network / Server Connectivity
     if (!error.response) {
-      Alert.alert("Connection Error", "Terminal unreachable. Check your network or Durg server status.");
+      Alert.alert('Connection Error', 'Terminal unreachable. Check your network or server status.');
       return Promise.reject(error);
     }
 
-    // 2. The 401 "Unauthorized" Reset
-    if (error.response.status === 401) {
-      await AsyncStorage.removeItem('userToken');
-      // Note: Actual UI redirection happens in AppNavigator.jsx 
-      // when it detects userToken is null via AuthContext.
-      Alert.alert("Session Expired", "Neural sync lost. Please re-authenticate.");
+    const isAuthCall = error.config?.url?.startsWith('/auth/');
+    if (error.response.status === 401 && !isAuthCall) {
+      await AsyncStorage.removeItem(TOKEN_KEY);
+      if (onUnauthorized) onUnauthorized();
+      Alert.alert('Session Expired', 'Please re-authenticate.');
     }
-    
     return Promise.reject(error);
   }
 );
+
+export const errorMessage = (err, fallback = 'Something went wrong') => {
+  const detail = err?.response?.data?.detail;
+  if (Array.isArray(detail)) return detail[0]?.msg || fallback;
+  return detail || fallback;
+};
 
 export default api;

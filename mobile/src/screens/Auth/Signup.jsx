@@ -1,236 +1,388 @@
 import React, { useState } from 'react';
 import { 
   View, Text, TextInput, TouchableOpacity, 
-  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, StyleSheet 
+  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Image, Alert
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { 
-  User, Mail, Lock, Rocket, 
+  User, Mail, Lock, Briefcase, Sparkles, Camera, FileText,
   ChevronRight, ChevronLeft, CheckCircle2 
 } from 'lucide-react-native';
-import api from '../../api/axios';
+import authService from '../../api/authService';
+import { errorMessage } from '../../api/axios';
+
+const LEVELS = ['Beginner', 'Intermediate', 'Pro'];
+const GENDERS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 
 export default function Signup({ navigation }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
   const [error, setError] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
   const [formData, setFormData] = useState({
-    full_name: '',
     email: '',
     password: '',
-    interests: [],
-    level: 'Beginner'
+    confirmPassword: '',
+    full_name: '',
+    age: '',
+    gender: '',
+    bio: '',
+    experience: '',
+    photo: null,
+    tech_stack: {},
   });
 
-  const availableInterests = ["React", "Python", "AI/ML", "Django", "FastAPI", "UI/UX", "Data Science"];
+  const update = (patch) => setFormData((prev) => ({ ...prev, ...patch }));
 
-  const toggleInterest = (interest) => {
-    setFormData(prev => ({
-      ...prev,
-      interests: prev.interests.includes(interest) 
-        ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest]
-    }));
+  const pickPhoto = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return Alert.alert('Permission required', 'Allow photo access to choose a profile picture.');
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.8 });
+    if (res.canceled || !res.assets?.length) return;
+    const a = res.assets[0];
+    const type = a.mimeType || 'image/jpeg';
+    if (!['image/jpeg', 'image/jpg', 'image/png'].includes(type)) {
+      return Alert.alert('Unsupported format', 'Only JPEG, JPG, and PNG formats are accepted.');
+    }
+    update({ photo: { uri: a.uri, name: a.fileName || 'avatar.jpg', type } });
   };
 
-  const handleSignup = async () => {
-    if (!formData.email || !formData.password || !formData.full_name) {
-      setError("Please complete all identity fields.");
-      setStep(1);
+  // Step 1 -> 2: validate credentials and block if the email is already registered.
+  const goToDetails = async () => {
+    const email = formData.email.toLowerCase().trim();
+    if (!email || !formData.password || !formData.confirmPassword) {
+      setError("Please fill in all fields.");
       return;
     }
-
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
     setLoading(true);
-    setError('');
     try {
-      const payload = {
-        full_name: formData.full_name,
-        email: formData.email.toLowerCase().trim(), // Ensure clean data
-        password: formData.password,
-        tech_stack: {
-          interests: formData.interests,
-          level: formData.level
-        }
-      };
-      await api.post('/auth/signup', payload);
-      navigation.navigate('Login');
-    } catch (err) {
-      const detail = err.response?.data?.detail;
-      setError(Array.isArray(detail) ? `${detail[0].msg}` : "Deployment Failed: Check Connection");
+      const res = await authService.checkEmail(email);
+      if (res?.exists) {
+        setError(res.message || "Email already registered.");
+        return;
+      }
+      setError('');
+      setStep(2);
+    } catch (e) {
+      setError(errorMessage(e, "Connection error. Please try again."));
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchSuggestions = async () => {
+    setSuggesting(true);
+    setError('');
+    try {
+      const data = await authService.suggestInterests(formData.experience.trim(), parseInt(formData.age, 10) || null);
+      setSuggestions(data.interests || []);
+      update({ tech_stack: {} });
+    } catch (e) {
+      setError(errorMessage(e, "Could not generate suggestions."));
+    } finally {
+      setSuggesting(false);
+    }
+  };
+
+  // Step 2 -> 3: validate personal details, then ask AI for interests.
+  const goToInterests = () => {
+    const age = parseInt(formData.age, 10);
+    if (!formData.full_name.trim()) {
+      setError("Please enter your full name.");
+      return;
+    }
+    if (isNaN(age) || age < 10 || age > 100 || !formData.gender) {
+      setError("Valid age (10-100) and gender are required.");
+      return;
+    }
+    if (formData.experience.trim().length < 10) {
+      setError("Tell us a bit about your experience (10+ characters).");
+      return;
+    }
+    setError('');
+    setStep(3);
+    if (suggestions.length === 0) fetchSuggestions();
+  };
+
+  const cycleLevel = ({ name, level }) => {
+    setFormData((prev) => {
+      const stack = { ...prev.tech_stack };
+      const current = stack[name];
+      if (!current) stack[name] = LEVELS.includes(level) ? level : 'Beginner';
+      else if (current === 'Beginner') stack[name] = 'Intermediate';
+      else if (current === 'Intermediate') stack[name] = 'Pro';
+      else delete stack[name];
+      return { ...prev, tech_stack: stack };
+    });
+  };
+
+  const handleSignup = async () => {
+    if (Object.keys(formData.tech_stack).length === 0) {
+      setError("Select at least one interest.");
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      await authService.signup({
+        full_name: formData.full_name.trim(),
+        email: formData.email.toLowerCase().trim(),
+        password: formData.password,
+        age: formData.age,
+        gender: formData.gender,
+        bio: formData.bio.trim(),
+        experience: formData.experience.trim(),
+        photo: formData.photo,
+        tech_stack: formData.tech_stack,
+      });
+      navigation.navigate('Login');
+    } catch (err) {
+      setError(errorMessage(err, "Signup failed. Check your connection."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const ErrorBox = () => error ? (
+    <View className="bg-danger-subtle border-2 border-danger p-4 mb-6">
+      <Text className="text-danger font-black text-[10px] uppercase text-center">{error}</Text>
+    </View>
+  ) : null;
+
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-white"
+      className="flex-1 bg-card"
     >
-      {/* SYSTEM PROGRESS BAR */}
-      <View className="flex-row h-2 bg-slate-100 mt-12 mx-8 border border-slate-900">
+      <View className="flex-row h-2 bg-muted mt-12 mx-8 border border-primary">
         {[1, 2, 3].map((s) => (
           <View 
             key={s} 
-            className={`flex-1 ${step >= s ? 'bg-primary' : 'bg-transparent'} ${s < 3 ? 'border-r border-slate-900' : ''}`} 
+            className={`flex-1 ${step >= s ? 'bg-primary' : 'bg-transparent'} ${s < 3 ? 'border-r border-primary' : ''}`} 
           />
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="px-8 pt-8">
-        
-        {/* STEP 1: IDENTITY */}
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} className="px-8 pt-8" keyboardShouldPersistTaps="handled">
+
+        {/* STEP 1: CREDENTIALS */}
         {step === 1 && (
           <View key="step1">
-            <Text className="text-5xl font-black uppercase italic tracking-tighter text-slate-900 leading-[0.85]">
+            <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-[0.85]">
               IDENTITY{'\n'}<Text className="text-primary">INIT</Text>
             </Text>
-            <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">Phase_01: Credential_Setup</Text>
-            
+            <Text className="text-[10px] font-bold text-subtle uppercase tracking-widest mt-4">Phase_01: Credential_Setup</Text>
+
             <View className="mt-10">
               <CustomInput 
-                label="FULL NAME"
-                icon={<User size={18} color="#94A3B8" />} 
-                placeholder="Enter your name" 
-                onChangeText={(val) => setFormData({...formData, full_name: val})}
-                value={formData.full_name}
-              />
-              <CustomInput 
                 label="EMAIL ADDRESS"
-                icon={<Mail size={18} color="#94A3B8" />} 
+                icon={<Mail size={18} className="text-subtle" />} 
                 placeholder="email@example.com" 
                 keyboardType="email-address"
-                autoCapitalize="none" // CRITICAL FOR RELIABILITY
-                onChangeText={(val) => setFormData({...formData, email: val})}
+                autoCapitalize="none"
+                onChangeText={(val) => update({ email: val })}
                 value={formData.email}
               />
               <CustomInput 
                 label="PASSWORD"
-                icon={<Lock size={18} color="#94A3B8" />} 
+                icon={<Lock size={18} className="text-subtle" />} 
                 placeholder="Min. 8 characters" 
                 secureTextEntry
-                autoCapitalize="none" // CRITICAL FOR RELIABILITY
-                onChangeText={(val) => setFormData({...formData, password: val})}
+                autoCapitalize="none"
+                onChangeText={(val) => update({ password: val })}
                 value={formData.password}
+              />
+              <CustomInput 
+                label="CONFIRM PASSWORD"
+                icon={<Lock size={18} className="text-subtle" />} 
+                placeholder="Re-enter password" 
+                secureTextEntry
+                autoCapitalize="none"
+                onChangeText={(val) => update({ confirmPassword: val })}
+                value={formData.confirmPassword}
               />
             </View>
 
+            <ErrorBox />
+
             <TouchableOpacity 
-              onPress={() => setStep(2)}
-              className="bg-slate-900 h-16 mt-8 flex-row items-center justify-center border-b-8 border-primary"
+              onPress={goToDetails}
+              disabled={loading}
+              className="bg-primary h-16 mt-2 flex-row items-center justify-center border-b-8 border-primary"
             >
-              <Text className="text-white font-black uppercase tracking-widest mr-2">Next_Phase</Text>
-              <ChevronRight size={18} color="#FFF" />
+              {loading ? <ActivityIndicator className="text-primary-foreground" /> : (
+                <>
+                  <Text className="text-primary-foreground font-black uppercase tracking-widest mr-2">Next_Phase</Text>
+                  <ChevronRight size={18} className="text-primary-foreground" />
+                </>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity 
               onPress={() => navigation.navigate('Login')}
-              className="mt-8 py-4 border-2 border-slate-900"
+              className="mt-8 py-4 border-2 border-primary"
             >
-              <Text className="text-slate-900 font-black uppercase text-center text-[10px] tracking-widest">
+              <Text className="text-foreground font-black uppercase text-center text-[10px] tracking-widest">
                 Return to <Text className="text-primary">Login_Node</Text>
               </Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* STEP 2: SKILL MATRIX */}
+        {/* STEP 2: PERSONAL DETAILS */}
         {step === 2 && (
           <View key="step2">
-            <Text className="text-5xl font-black uppercase italic tracking-tighter text-slate-900">
-              SKILL{'\n'}<Text className="text-slate-200">MATRIX</Text>
+            <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-[0.85]">
+              PROFILE{'\n'}<Text className="text-primary">DATA</Text>
             </Text>
-            
-            <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-6 mb-4">Select_Tech_Interests</Text>
-            <View className="flex-row flex-wrap gap-2 mb-8">
-              {availableInterests.map(interest => (
-                <TouchableOpacity 
-                  key={interest}
-                  onPress={() => toggleInterest(interest)}
-                  className={`px-4 py-3 border-2 ${formData.interests.includes(interest) ? 'bg-primary border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white border-slate-200'}`}
-                >
-                  <Text className={`text-[10px] font-black uppercase ${formData.interests.includes(interest) ? 'text-slate-900' : 'text-slate-400'}`}>
-                    {interest}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <Text className="text-[10px] font-bold text-subtle uppercase tracking-widest mt-4">Phase_02: Personal_Details</Text>
 
-            <View className="mb-10">
-              <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Experience_Level</Text>
-              <View className="flex-row gap-3">
-                {['Beginner', 'Intermediate', 'Pro'].map(lvl => (
+            <View className="mt-10">
+              <View className="items-center mb-8">
+                <TouchableOpacity onPress={pickPhoto} className="w-24 h-24 border-2 border-primary bg-card items-center justify-center overflow-hidden">
+                  {formData.photo ? (
+                    <Image source={{ uri: formData.photo.uri }} className="w-full h-full" />
+                  ) : (
+                    <Camera size={28} className="text-subtle" />
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity onPress={pickPhoto} className="bg-primary px-4 py-2 mt-3">
+                  <Text className="text-primary-foreground font-black uppercase text-[10px] tracking-widest">Choose Profile Pic</Text>
+                </TouchableOpacity>
+                <Text className="text-[8px] text-subtle font-bold mt-2">PNG, JPG OR JPEG</Text>
+              </View>
+              <CustomInput 
+                label="FULL NAME"
+                icon={<User size={18} className="text-subtle" />} 
+                placeholder="Enter your name" 
+                onChangeText={(val) => update({ full_name: val })}
+                value={formData.full_name}
+              />
+              <CustomInput 
+                label="AGE"
+                icon={<User size={18} className="text-subtle" />} 
+                placeholder="10 - 100" 
+                keyboardType="number-pad"
+                onChangeText={(val) => update({ age: val })}
+                value={formData.age}
+              />
+              <Text className="text-[8px] font-black text-subtle uppercase tracking-widest mb-2 ml-1">GENDER</Text>
+              <View className="flex-row flex-wrap gap-2 mb-6">
+                {GENDERS.map((g) => (
                   <TouchableOpacity
-                    key={lvl}
-                    className={`flex-1 py-4 border-2 items-center ${formData.level === lvl ? 'bg-slate-900 border-slate-900' : 'bg-slate-50 border-slate-100'}`}
-                    onPress={() => setFormData({...formData, level: lvl})}
+                    key={g}
+                    onPress={() => update({ gender: g })}
+                    className={`px-4 py-3 border-2 border-primary ${formData.gender === g ? 'bg-primary' : 'bg-card'}`}
                   >
-                    <Text className={`text-[10px] font-black uppercase ${formData.level === lvl ? 'text-white' : 'text-slate-400'}`}>{lvl}</Text>
+                    <Text className={`text-[10px] font-black uppercase ${formData.gender === g ? 'text-primary-foreground' : 'text-foreground'}`}>{g}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
+              <CustomInput 
+                label="SHORT BIOGRAPHY / OBJECTIVES (OPTIONAL)"
+                icon={<FileText size={18} className="text-subtle" />} 
+                placeholder="What are you aiming for?" 
+                onChangeText={(val) => update({ bio: val })}
+                value={formData.bio}
+              />
+              <CustomInput 
+                label="YOUR EXPERIENCE"
+                icon={<Briefcase size={18} className="text-subtle" />} 
+                placeholder="e.g. 2 years of Excel analytics, learning Python..." 
+                multiline
+                textAlignVertical="top"
+                className="bg-card border-2 border-primary h-28 pt-4 pl-12 pr-4 text-foreground shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+                onChangeText={(val) => update({ experience: val })}
+                value={formData.experience}
+              />
             </View>
+
+            <ErrorBox />
 
             <View className="flex-row gap-4">
               <TouchableOpacity 
-                onPress={() => setStep(1)} 
-                className="flex-1 h-16 border-2 border-slate-900 items-center justify-center bg-white"
+                onPress={() => { setError(''); setStep(1); }} 
+                className="flex-1 h-16 border-2 border-primary items-center justify-center bg-card"
               >
-                <ChevronLeft size={20} color="#0F172A" />
+                <ChevronLeft size={20} className="text-primary" />
               </TouchableOpacity>
-              
               <TouchableOpacity 
-                onPress={() => setStep(3)} 
-                className="flex-[3] h-16 bg-slate-900 items-center justify-center border-b-8 border-primary"
+                onPress={goToInterests} 
+                className="flex-[3] h-16 bg-primary items-center justify-center border-b-8 border-primary"
               >
-                <Text className="text-white font-black uppercase tracking-widest">Verify_Deployment</Text>
+                <Text className="text-primary-foreground font-black uppercase tracking-widest">Next_Phase</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
 
-        {/* STEP 3: DEPLOY */}
+        {/* STEP 3: AI-SUGGESTED INTERESTS */}
         {step === 3 && (
           <View key="step3">
-            <View className="bg-slate-50 border-4 border-slate-900 p-8 mb-8">
-              <View className="h-16 w-16 bg-primary items-center justify-center mb-6 border-2 border-slate-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <Rocket size={32} color="#FFF" />
+            <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-[0.85]">
+              SKILL{'\n'}<Text className="text-primary">MATRIX</Text>
+            </Text>
+            <Text className="text-[10px] font-bold text-subtle uppercase tracking-widest mt-4">
+              Phase_03: AI_Suggested_Interests (tap to select / change level)
+            </Text>
+
+            {suggesting ? (
+              <View className="py-12 items-center">
+                <Sparkles size={24} className="text-primary" />
+                <Text className="text-[10px] font-black uppercase tracking-widest text-subtle mt-3">Generating suggestions...</Text>
               </View>
-              <Text className="text-3xl font-black uppercase italic tracking-tighter text-slate-900">READY_FOR{'\n'}LAUNCH</Text>
-              
-              <View className="mt-8 pt-6 border-t-2 border-slate-200">
-                <Text className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-4">Final_Payload_Review</Text>
-                <Text className="font-black text-xl text-slate-900 uppercase italic mb-1">{formData.full_name || 'Anonymous_Node'}</Text>
-                <Text className="text-xs text-slate-400 mb-4 font-bold">{formData.email}</Text>
-                
-                <View className="flex-row items-center bg-white border-2 border-slate-900 p-3 mb-4">
-                  <CheckCircle2 size={14} color="#0F172A" />
-                  <Text className="ml-2 text-[10px] font-black uppercase tracking-widest text-slate-900">Level: {formData.level}</Text>
-                </View>
+            ) : (
+              <View className="flex-row flex-wrap gap-2 mt-8 mb-6">
+                {suggestions.map((s) => {
+                  const lvl = formData.tech_stack[s.name];
+                  return (
+                    <TouchableOpacity 
+                      key={s.name}
+                      onPress={() => cycleLevel(s)}
+                      className={`px-4 py-3 border-2 ${lvl ? 'bg-primary border-primary' : 'bg-card border-border'}`}
+                    >
+                      <Text className={`text-[10px] font-black uppercase ${lvl ? 'text-primary-foreground' : 'text-subtle'}`}>
+                        {s.name}{lvl ? ` · ${lvl}` : ''}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
+            )}
+
+            <TouchableOpacity onPress={fetchSuggestions} disabled={suggesting || loading} className="mb-8 self-start">
+              <Text className="text-primary font-black uppercase text-[10px] tracking-widest">Regenerate_Suggestions</Text>
+            </TouchableOpacity>
+
+            <ErrorBox />
+
+            <View className="flex-row gap-4">
+              <TouchableOpacity 
+                onPress={() => { setError(''); setStep(2); }} 
+                disabled={loading}
+                className="flex-1 h-16 border-2 border-primary items-center justify-center bg-card"
+              >
+                <ChevronLeft size={20} className="text-primary" />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={handleSignup}
+                disabled={loading || suggesting}
+                className="flex-[3] h-16 bg-primary items-center justify-center border-b-8 border-primary"
+              >
+                {loading ? <ActivityIndicator className="text-primary-foreground" /> : (
+                  <Text className="text-primary-foreground font-black uppercase tracking-widest">Complete_Setup</Text>
+                )}
+              </TouchableOpacity>
             </View>
-
-            {error ? (
-              <View className="bg-red-50 border-2 border-red-500 p-4 mb-6">
-                <Text className="text-red-600 font-black text-[10px] uppercase text-center">{error}</Text>
-              </View>
-            ) : null}
-
-            <TouchableOpacity 
-              onPress={handleSignup}
-              disabled={loading}
-              className="w-full h-20 bg-primary items-center justify-center border-b-8 border-slate-400"
-            >
-              {loading ? <ActivityIndicator color="#FFF" /> : (
-                <Text className="text-white font-black uppercase tracking-[4px] italic">Initialize_Sync</Text>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              onPress={() => setStep(2)} 
-              className="mt-6 py-2 self-center"
-            >
-              <Text className="text-slate-400 font-black uppercase text-[10px] tracking-widest">Modify_Parameters</Text>
-            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
@@ -240,13 +392,13 @@ export default function Signup({ navigation }) {
 
 const CustomInput = ({ label, icon, ...props }) => (
   <View className="mb-6">
-    <Text className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">{label}</Text>
+    <Text className="text-[8px] font-black text-subtle uppercase tracking-widest mb-2 ml-1">{label}</Text>
     <View className="relative">
       <View className="absolute left-4 top-4 z-10">{icon}</View>
       <TextInput
         style={{ fontSize: 14, fontWeight: '700' }}
-        className="bg-white border-2 border-slate-900 h-14 pl-12 pr-4 text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]"
-        placeholderTextColor="#CBD5E1"
+        className="bg-card border-2 border-primary h-14 pl-12 pr-4 text-foreground shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+        placeholderClassName="text-line-strong"
         {...props}
       />
     </View>

@@ -13,6 +13,18 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
 
+class InterestSuggestRequest(BaseModel):
+    experience: str = Field(..., min_length=10, max_length=1000)
+    age: Optional[int] = Field(None, ge=10, le=100)
+
+class InterestSuggestion(BaseModel):
+    name: str = Field(..., min_length=1, max_length=40)
+    level: str = "Beginner"
+    reason: str = Field("", max_length=200)
+
+class InterestSuggestionList(BaseModel):
+    interests: List[InterestSuggestion]
+
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
     
@@ -40,6 +52,7 @@ class UserOut(UserBase):
     photo_url: Optional[str] = None
     age: Optional[int] = None
     gender: Optional[str] = None
+    experience: Optional[str] = None
     xp_points: int = 0
     is_active: bool
     tech_stack: Optional[Dict[str, str]] = Field(default_factory=dict)
