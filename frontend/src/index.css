@@ -12,6 +12,84 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+  --radius-control: 1.25rem;
+  --radius-card: 1.5rem;
+  --radius-panel: 2rem;
+  --radius-dialog: 2.5rem;
+  --radius-hero: 3rem;
+  --radius-feature: 3.5rem;
+  --radius-landing-ornament: 5rem;
+  --radius-trigger: min(var(--radius-md), 10px);
+  --radius-select: min(var(--radius-md), 12px);
+  --radius-inherit: inherit;
+
+  --text-micro: 0.375rem;
+  --text-tiny: 0.4375rem;
+  --text-caption: 0.5rem;
+  --text-label: 0.5625rem;
+  --text-compact: 0.625rem;
+  --text-detail: 0.6875rem;
+  --text-body-compact: 0.8rem;
+  --text-display-xl: 9rem;
+
+  --tracking-editorial: 0.2em;
+  --tracking-wide: 0.3em;
+  --tracking-expanded: 0.4em;
+  --tracking-display: 0.5em;
+  --tracking-hero: 0.6em;
+  --tracking-ultra: 0.8em;
+  --tracking-max: 1em;
+  --tracking-tight-display: -0.06em;
+  --tracking-tight-hero: -0.07em;
+  --tracking-tight-max: -0.08em;
+
+  --leading-ultra-tight: 0.75;
+  --leading-display: 0.8;
+  --leading-heading: 0.85;
+  --leading-compact: 0.9;
+  --leading-content: 1.1;
+
+  --blur-glow-sm: 80px;
+  --blur-glow-md: 100px;
+  --blur-glow-lg: 120px;
+  --opacity-trace: 0.02;
+  --scale-press: 0.98;
+  --scale-hover: 1.02;
+
+  --spacing-divider: 3px;
+  --spacing-compact-row: 42px;
+  --spacing-language-picker: 220px;
+  --spacing-course-sidebar: 420px;
+  --spacing-lab-workspace: 75vh;
+  --spacing-chart-panel: 350px;
+  --spacing-lecture-player: 800px;
+  --spacing-card-visual: 200px;
+  --spacing-auth-panel: 450px;
+  --spacing-data-filter: 150px;
+  --spacing-decoration-small: 30%;
+  --spacing-decoration-large: 40%;
+  --spacing-page-inset: 10%;
+  --spacing-page-upper: 20%;
+  --spacing-progress-fill: calc(100% - 1px);
+  --spacing-tab-indicator: 5px;
+
+  --container-page-wide: 1500px;
+  --container-message-preview: 200px;
+  --container-content-narrow: 90%;
+
+  --shadow-side-panel: -20px 0 50px var(--shadow-ink);
+  --shadow-card-depth: 0 40px 80px -15px var(--shadow-ink);
+  --shadow-result-depth: 0 50px 100px -20px var(--shadow-ink);
+  --shadow-offset-primary: 2px 2px 0 0 var(--primary);
+  --shadow-offset-primary-md: 4px 4px 0 0 var(--primary);
+  --shadow-offset-primary-lg: 20px 20px 0 var(--primary);
+  --shadow-offset-success: 4px 4px 0 0 var(--success);
+  --z-index-modal: 60;
+  --z-index-toast: 61;
+
+  --color-shadow-ink: var(--shadow-ink);
+  --color-stripe: var(--stripe);
+  --color-stroke-faint: var(--stroke-faint);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -151,6 +229,17 @@
 }
 
 @layer utilities {
+  .grid-cols-label-auto { grid-template-columns: 1fr auto; }
+  .grid-cols-auto-label { grid-template-columns: auto 1fr; }
+  .grid-rows-content { grid-template-rows: auto auto; }
+  .border-video-frame { border-width: 10px; }
+  .progress-matrix-stripes {
+    background-image: linear-gradient(45deg, var(--stripe) 25%, transparent 25%, transparent 50%, var(--stripe) 50%, var(--stripe) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+  }
+  .profile-avatar-cutout { clip-path: polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%); }
+  .profile-tech-chip-cutout { clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); }
+  .progress-track-fill { height: calc(100% - 1px); }
   .stroke-text { -webkit-text-stroke: 1.5px var(--primary); }
   .stroke-text-white { -webkit-text-stroke: 1px var(--stroke-faint); }
   .custom-scrollbar::-webkit-scrollbar { width: 2px; }

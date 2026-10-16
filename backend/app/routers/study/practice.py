@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
+import logging
 
 from app.db.session import get_db
 from app.core.security import get_current_user
@@ -11,10 +12,18 @@ from app.db.models.courses import Course
 from app.schemas.study import DynamicExecuteRequest, UserEnvironmentOut, LabVerifyRequest
 from app.integrations.gemini import gemini_client
 from app.integrations.shared import WANDBOX_COMPILERS
-from app.utils.redis import get_active_lab_task
+from app.utils.redis import (
+    claim_lab_reward,
+    consume_verified_lab_run,
+    get_active_lab_task,
+    release_lab_reward_claim,
+    set_active_lab_task,
+    set_verified_lab_run,
+)
 from app.workers.tasks.lab.generator import generate_lab_challenge
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 WANDBOX_URL = "https://wandbox.org/api/compile.json"
 LAB_XP = 25
@@ -53,16 +62,17 @@ async def get_active_lab_challenge(
 
     target_topic = topic or await resolve_user_topic(db, current_user)
 
-    # Dispatch Celery background task
-    generate_lab_challenge.delay(user_id_str, target_topic, "Intermediate")
-
-    # If cached exists even with slight topic difference, return it while worker updates
     if cached_task:
+        try:
+            generate_lab_challenge.delay(user_id_str, target_topic, "Intermediate")
+        except Exception as exc:
+            logger.exception("Failed to queue a lab challenge for user %s", user_id_str)
+            raise HTTPException(status_code=503, detail="Lab challenge generation is temporarily unavailable.") from exc
         return cached_task
 
-    # Instant response fallback while Celery generates in background
+    # Return a runnable bootstrap while the background task creates the real challenge.
     clean_topic_slug = target_topic.lower().replace(" ", "-")[:12]
-    return {
+    bootstrap_task = {
         "task_id": f"lab-{clean_topic_slug}-01",
         "topic": target_topic,
         "title": f"{target_topic} Operational Logic",
@@ -72,7 +82,19 @@ async def get_active_lab_challenge(
         "language": "python",
         "starter_code": f"# {target_topic} Validation Challenge\ndef solve():\n    # Implement logic here\n    return 1\n",
         "test_harness": "\nif __name__ == '__main__':\n    assert solve() == 1\n    print(1)\n",
+        "is_bootstrap": True,
     }
+    await set_active_lab_task(user_id_str, bootstrap_task)
+
+    try:
+        generate_lab_challenge.delay(user_id_str, target_topic, "Intermediate")
+    except Exception:
+        fallback_task = {**bootstrap_task, "is_bootstrap": False, "generation_error": True}
+        await set_active_lab_task(user_id_str, fallback_task)
+        logger.exception("Failed to queue a lab challenge for user %s", user_id_str)
+        return fallback_task
+
+    return bootstrap_task
 
 
 @router.get("/user-languages", response_model=List[UserEnvironmentOut])
@@ -100,12 +122,14 @@ async def get_user_dynamic_languages(
     mapped_langs = await gemini_client.extract_batch_languages(labels_only)
 
     available_envs = {}
-    for i, lang in enumerate(mapped_langs):
+    for (label, origin), lang in zip(all_labels, mapped_langs):
+        if lang not in WANDBOX_COMPILERS:
+            continue
         if lang not in available_envs:
             available_envs[lang] = {
                 "id": lang,
-                "display_name": all_labels[i][0],
-                "origin": all_labels[i][1],
+                "display_name": label,
+                "origin": origin,
             }
 
     if not available_envs:
@@ -126,16 +150,28 @@ async def execute_dynamic_code(
     user_id_str = str(current_user.id)
     active_task = await get_active_lab_task(user_id_str)
 
-    piston_lang = payload.language or "python"
-    compiler = WANDBOX_COMPILERS.get(piston_lang, WANDBOX_COMPILERS.get("python", "cpython-3.10.4"))
+    piston_lang = (payload.language or "python").strip().lower()
+    compiler = WANDBOX_COMPILERS.get(piston_lang)
+    if not compiler:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported runtime '{piston_lang}'. Choose one of: {', '.join(sorted(WANDBOX_COMPILERS))}.",
+        )
 
     code_to_run = payload.code
+    task_id = None
+    has_task_harness = bool(
+        active_task
+        and active_task.get("test_harness")
+        and active_task.get("language", "python").strip().lower() == piston_lang
+    )
 
-    # Append test harness if available and not already in code
-    if active_task and active_task.get("test_harness"):
+    # Always append the server-owned harness so user code cannot replace it.
+    if has_task_harness:
         harness = active_task["test_harness"].strip()
-        if harness and harness not in code_to_run:
+        if harness:
             code_to_run = f"{code_to_run}\n\n{harness}"
+            task_id = active_task.get("task_id")
 
     wandbox_payload = {
         "code": code_to_run,
@@ -153,16 +189,22 @@ async def execute_dynamic_code(
             result = response.json()
             stdout = result.get("program_output", "")
             stderr = result.get("program_error", "") or result.get("compiler_error", "")
-            
-            # Check if execution passed assertions
-            is_passed = stdout.strip() == "1" or "SUCCESS" in stdout
+            exit_status = result.get("status")
+            is_passed = bool(
+                task_id
+                and exit_status in (0, "0")
+                and stdout.strip() == "1"
+                and not stderr
+            )
+            if is_passed:
+                await set_verified_lab_run(user_id_str, task_id)
 
             return {
                 "language": piston_lang,
                 "run": {
                     "stdout": stdout,
                     "stderr": stderr,
-                    "code": result.get("status"),
+                    "code": exit_status,
                     "passed": is_passed,
                 },
             }
@@ -183,8 +225,25 @@ async def verify_lab(
     if not data.success:
         return {"xp_awarded": 0, "xp_points": current_user.xp_points or 0}
 
-    current_user.xp_points = (current_user.xp_points or 0) + LAB_XP
-    await db.commit()
-    await db.refresh(current_user)
+    verified_task_id = await consume_verified_lab_run(str(current_user.id))
+    if verified_task_id != data.task_id:
+        raise HTTPException(status_code=409, detail="Run this lab successfully before claiming its XP.")
+
+    active_task = await get_active_lab_task(str(current_user.id))
+    if not active_task or active_task.get("task_id") != verified_task_id:
+        raise HTTPException(status_code=409, detail="This lab challenge is no longer active.")
+
+    claimed = await claim_lab_reward(str(current_user.id), verified_task_id)
+    if not claimed:
+        return {"xp_awarded": 0, "xp_points": current_user.xp_points or 0}
+
+    try:
+        current_user.xp_points = (current_user.xp_points or 0) + LAB_XP
+        await db.commit()
+        await db.refresh(current_user)
+    except Exception:
+        await release_lab_reward_claim(str(current_user.id), verified_task_id)
+        await db.rollback()
+        raise
 
     return {"xp_awarded": LAB_XP, "xp_points": current_user.xp_points}

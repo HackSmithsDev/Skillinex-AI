@@ -47,9 +47,9 @@ const Footer = () => {
           <div>
             <h4 className="font-bold text-foreground mb-4 text-xs uppercase tracking-widest">Support</h4>
             <ul className="space-y-3 text-sm text-soft font-medium">
-              <li><a href="#" className="hover:text-primary transition-colors">Documentation</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
+              <li><span aria-disabled="true" className="text-subtle">Documentation (coming soon)</span></li>
+              <li><span aria-disabled="true" className="text-subtle">Privacy Policy (coming soon)</span></li>
+              <li><span aria-disabled="true" className="text-subtle">Terms of Service (coming soon)</span></li>
             </ul>
           </div>
 
@@ -58,17 +58,17 @@ const Footer = () => {
             <h4 className="font-bold text-foreground mb-4 text-xs uppercase tracking-widest">Connect</h4>
             <div className="flex gap-3">
               {/* Main Website / Docs */}
-              <a href="https://skillinex.ai" target="_blank" rel="noopener noreferrer" className="...">
+              <a href="https://skillinex.ai" target="_blank" rel="noopener noreferrer" aria-label="Skillinex website" className="...">
                 <Globe size={20} />
               </a>
               
               {/* Organization GitHub / Dev Updates */}
-              <a href="https://github.com/skillinex-org" target="_blank" rel="noopener noreferrer" className="...">
+              <a href="https://github.com/skillinex-org" target="_blank" rel="noopener noreferrer" aria-label="Skillinex on GitHub" className="...">
                 <Cpu size={20} />
               </a>
               
               {/* Community / Telegram / Discord */}
-              <a href="https://t.me/skillinex_community" target="_blank" rel="noopener noreferrer" className="...">
+              <a href="https://t.me/skillinex_community" target="_blank" rel="noopener noreferrer" aria-label="Skillinex community" className="...">
                 <MessageSquare size={20} />
               </a>
             </div>
@@ -77,7 +77,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-surface flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[11px] text-subtle font-bold uppercase tracking-widest">
+          <p className="text-detail text-subtle font-bold uppercase tracking-widest">
             © {currentYear} Skillinex AI. All rights reserved.
           </p>
           <p className="text-xs text-subtle flex items-center gap-1 font-medium bg-surface px-3 py-1 rounded-full border border-muted">

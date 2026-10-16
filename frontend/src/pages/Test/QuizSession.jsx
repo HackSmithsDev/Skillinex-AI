@@ -142,6 +142,15 @@ export default function QuizSession() {
     );
   }
 
+  if (!questions.length) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-card p-6 text-center">
+        <p className="font-bold text-foreground">No assessment questions are available.</p>
+        <Button onClick={() => navigate("/test")}>Return to assessments</Button>
+      </div>
+    );
+  }
+
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
 
@@ -162,25 +171,25 @@ export default function QuizSession() {
         {/* TOP STATUS BAR */}
         <div className="flex justify-between items-end mb-8">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-subtle">Target Node</span>
+            <span className="text-compact font-black uppercase tracking-expanded text-subtle">Target Node</span>
             <h2 className="text-2xl font-black uppercase italic tracking-tighter text-foreground">
               {testMetadata?.node_name}
             </h2>
           </div>
           <div className="text-right">
-             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-subtle italic">Progress</span>
+             <span className="text-compact font-black uppercase tracking-expanded text-subtle italic">Progress</span>
              <p className="text-xl font-black italic tracking-tighter tabular-nums">
                 {currentStep + 1} / {questions.length}
              </p>
           </div>
         </div>
 
-        <Card className="shadow-[0_40px_80px_-15px_var(--shadow-ink)] border-none rounded-none bg-card">
+        <Card className="shadow-card-depth border-none rounded-none bg-card">
           <CardHeader className="p-0">
              <Progress value={progress} className="h-1 rounded-none bg-muted accent-foreground" />
           </CardHeader>
 
-          <CardContent className="p-10 lg:p-16 min-h-[450px]">
+          <CardContent className="p-10 lg:p-16 min-h-auth-panel">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentStep}
@@ -196,11 +205,11 @@ export default function QuizSession() {
                         ) : (
                           <Zap size={14} className="text-highlight fill-highlight" />
                         )}
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-subtle">
+                        <span className="text-label font-bold uppercase tracking-widest text-subtle">
                             {isReviewMode ? "Diagnostic Review Stream" : "Neural Query"}
                         </span>
                     </div>
-                    <h3 className="text-3xl lg:text-4xl font-black text-foreground leading-[1.1] tracking-tight">
+                    <h3 className="text-3xl lg:text-4xl font-black text-foreground leading-content tracking-tight">
                         {currentQuestion?.question}
                     </h3>
                 </div>
@@ -241,10 +250,10 @@ export default function QuizSession() {
                           <div className="flex justify-between items-center w-full">
                             <span>{opt}</span>
                             {isReviewMode && isCorrect && (
-                              <span className="text-[9px] bg-success text-primary-foreground font-black px-2 py-0.5 rounded-none tracking-normal not-italic">CORRECT</span>
+                              <span className="text-label bg-success text-primary-foreground font-black px-2 py-0.5 rounded-none tracking-normal not-italic">CORRECT</span>
                             )}
                             {isReviewMode && isSelected && !isCorrect && (
-                              <span className="text-[9px] bg-danger text-primary-foreground font-black px-2 py-0.5 rounded-none tracking-normal not-italic">FAULT_INPUT</span>
+                              <span className="text-label bg-danger text-primary-foreground font-black px-2 py-0.5 rounded-none tracking-normal not-italic">FAULT_INPUT</span>
                             )}
                           </div>
                         </Label>
@@ -270,7 +279,7 @@ export default function QuizSession() {
               ) : (
                 <div className="flex items-center gap-2 text-line-strong">
                     <AlertCircle size={14} />
-                    <p className="text-[10px] font-black uppercase tracking-widest">
+                    <p className="text-compact font-black uppercase tracking-widest">
                        {isReviewMode ? "Audit Lock: Mutations Prohibited" : "Caution: Sync permanent after submission"}
                     </p>
                 </div>
@@ -279,7 +288,7 @@ export default function QuizSession() {
             
             <Button 
                 size="lg" 
-                className={`h-16 px-12 text-sm font-black uppercase tracking-[0.2em] rounded-none transition-all duration-500 ${
+                className={`h-16 px-12 text-sm font-black uppercase tracking-editorial rounded-none transition-all duration-500 ${
                     !selectedAnswers[currentStep] && !isReviewMode
                       ? 'bg-border text-subtle cursor-not-allowed' 
                       : 'bg-primary hover:bg-highlight hover:text-foreground text-primary-foreground'
@@ -302,8 +311,8 @@ export default function QuizSession() {
 
         {/* FOOTER METADATA */}
         <div className="mt-8 flex justify-between items-center opacity-30 px-2">
-            <span className="text-[8px] font-black uppercase tracking-[0.3em]">Session_ID: {testMetadata?.session_id}</span>
-            <span className="text-[8px] font-black uppercase tracking-[0.3em]">
+            <span className="text-caption font-black uppercase tracking-wide">Session_ID: {testMetadata?.session_id}</span>
+            <span className="text-caption font-black uppercase tracking-wide">
                {isReviewMode ? "STATIC_HISTORICAL_STREAM" : "Secure_Transfer_Active"}
             </span>
         </div>

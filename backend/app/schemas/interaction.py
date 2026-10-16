@@ -7,12 +7,14 @@ class ChatMessageBase(BaseModel):
     content: str
     role: str # "user" or "assistant"
 
-class ChatMessageCreate(ChatMessageBase):
+class ChatMessageCreate(BaseModel):
+    content: str
     session_id: UUID
 
 class ChatMessageOut(ChatMessageBase):
     id: UUID
     created_at: datetime
+    is_helpful: Optional[bool] = None
     
     model_config = ConfigDict(from_attributes=True)
 

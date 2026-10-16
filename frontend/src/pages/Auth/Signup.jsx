@@ -171,7 +171,7 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface p-4">
-      <motion.div layout className="max-w-xl w-full bg-card rounded-[2.5rem] shadow-2xl shadow-border/60 overflow-hidden border border-muted">
+      <motion.div layout className="max-w-xl w-full bg-card rounded-dialog shadow-2xl shadow-border/60 overflow-hidden border border-muted">
         <div className="flex">
           {/* Progress Sidebar */}
           <div className="w-2 bg-surface flex flex-col">
@@ -309,7 +309,7 @@ const Signup = () => {
                           }}
                         />
                       </label>
-                      <span className="text-[10px] text-subtle font-mono">PNG, JPG or JPEG up to 5MB</span>
+                      <span className="text-compact text-subtle font-mono">PNG, JPG or JPEG up to 5MB</span>
                     </div>
 
                     {/* DEMOGRAPHIC VARIABLES */}
@@ -434,7 +434,7 @@ const Signup = () => {
                           >
                             {name}
                             {activeLevel && (
-                              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-card border font-extrabold shadow-sm tracking-wider">
+                              <span className="text-label uppercase px-1.5 py-0.5 rounded bg-card border font-extrabold shadow-sm tracking-wider">
                                 {activeLevel}
                               </span>
                             )}

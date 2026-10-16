@@ -42,21 +42,21 @@ export default function Achievements() {
       <View className="px-6 pt-16 pb-8 border-b-4 border-primary">
         <View className="flex-row items-center mb-3">
           <View className="h-2 w-2 bg-primary mr-2" />
-          <Text className="text-[10px] font-black uppercase tracking-[2px] text-subtle">
+          <Text className="text-compact font-black uppercase tracking-wide text-subtle">
             Achievement_Node_Active
           </Text>
         </View>
         
-        <Text className="text-7xl font-black uppercase italic tracking-tighter leading-[0.75] text-foreground">
+        <Text className="text-7xl font-black uppercase italic tracking-tighter leading-ultra-tight text-foreground">
           SKILL{'\n'}
           <Text className="text-border">_LOG</Text>
         </Text>
 
         <View className="mt-6 flex-row justify-between items-center">
-          <Text className="text-[8px] font-bold text-subtle uppercase tracking-[1px]">
+          <Text className="text-caption font-bold text-subtle uppercase tracking-compact">
             ID: {user?.id?.toString().substring(0, 12) || "GUEST"} // SYNC: REALTIME
           </Text>
-          <View className="h-[1px] flex-1 bg-muted ml-4" />
+          <View className="h-px flex-1 bg-muted ml-4" />
         </View>
       </View>
 
@@ -71,13 +71,13 @@ export default function Achievements() {
       <View className="p-6">
         <View className="flex-row items-center mb-8">
           <Activity size={18} strokeWidth={3} className="text-primary" />
-          <Text className="ml-3 text-[10px] font-black uppercase tracking-[4px] text-foreground">
+          <Text className="ml-3 text-compact font-black uppercase tracking-display text-foreground">
             Progression_Matrix
           </Text>
         </View>
 
         {skills.length === 0 && (
-          <Text className="text-[10px] font-black uppercase text-subtle mb-6">No_Tests_Logged_Yet</Text>
+          <Text className="text-compact font-black uppercase text-subtle mb-6">No_Tests_Logged_Yet</Text>
         )}
         
         {skills.map((skill, i) => (
@@ -89,16 +89,16 @@ export default function Achievements() {
                 </View>
                 <Text className="text-xs font-black uppercase italic text-foreground">{skill.name}</Text>
               </View>
-              <Text className="text-[10px] font-black text-foreground">LVL_{skill.level}</Text>
+              <Text className="text-compact font-black text-foreground">LVL_{skill.level}</Text>
             </View>
             
-            <View className="h-5 bg-muted border-2 border-primary shadow-[4px_4px_0px_0px_rgb(var(--primary))] overflow-hidden">
+            <View className="h-5 bg-muted border-2 border-primary shadow-offset-primary overflow-hidden">
               <View 
                 style={{ width: `${skill.xp}%` }}
                 className="h-full bg-primary border-r-2 border-primary"
               />
             </View>
-            <Text className="text-[8px] font-black text-line-strong mt-2 tracking-[2px] uppercase text-right">
+            <Text className="text-caption font-black text-line-strong mt-2 tracking-wide uppercase text-right">
               Sync_Progress: {skill.xp}/100_XP
             </Text>
           </View>
@@ -109,7 +109,7 @@ export default function Achievements() {
       <View className="px-6 pb-24">
         <View className="flex-row items-center mb-6">
           <Zap size={18} strokeWidth={3} className="text-primary" />
-          <Text className="ml-3 text-[10px] font-black uppercase tracking-[4px] text-foreground">
+          <Text className="ml-3 text-compact font-black uppercase tracking-display text-foreground">
             Unlocked_Nodes
           </Text>
         </View>
@@ -117,7 +117,7 @@ export default function Achievements() {
         {badges.map((badge) => (
           <View 
             key={badge.id}
-            className={`p-5 border-2 mb-4 flex-row items-center justify-between shadow-[4px_4px_0px_0px_rgb(var(--inverse)/0.05)]
+            className={`p-5 border-2 mb-4 flex-row items-center justify-between shadow-offset-inverse-muted
               ${badge.earned ? 'border-primary bg-card' : 'border-muted opacity-30 bg-surface'}`}
           >
             <View className="flex-row items-center">
@@ -125,8 +125,8 @@ export default function Achievements() {
                 <Trophy size={18} className={badge.earned ? "text-highlight" : "text-line-strong"} />
               </View>
               <View className="ml-4">
-                <Text className="text-[11px] font-black uppercase italic text-foreground">{badge.title}</Text>
-                <Text className="text-[9px] font-bold text-subtle uppercase tracking-[1px]">{badge.desc}</Text>
+                <Text className="text-detail font-black uppercase italic text-foreground">{badge.title}</Text>
+                <Text className="text-label font-bold text-subtle uppercase tracking-compact">{badge.desc}</Text>
               </View>
             </View>
             {badge.earned && (
@@ -144,7 +144,7 @@ export default function Achievements() {
 const StatNode = ({ label, value, icon, border }) => (
   <View className={`flex-1 p-6 items-center justify-center ${border ? 'border-l-2 border-primary' : ''}`}>
     {icon}
-    <Text className="text-[8px] font-black uppercase tracking-[2px] text-subtle mt-3">{label}</Text>
+    <Text className="text-caption font-black uppercase tracking-wide text-subtle mt-3">{label}</Text>
     <Text className="text-2xl font-black italic text-foreground uppercase tracking-tighter">{value}</Text>
   </View>
 );

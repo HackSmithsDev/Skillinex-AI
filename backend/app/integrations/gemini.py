@@ -68,7 +68,7 @@ class GeminiService:
 
         try:
             result = await self.get_structured_response(
-                f"Given this course/topic: '{raw_context}'. Return only one Piston runtime key from the allowed set: python, javascript, java, cpp, csharp, go, kotlin, php, swift, sql.",
+                f"Given this course/topic: '{raw_context}'. Return only one runtime key from the allowed set: python, javascript, java, cpp, csharp, go, php, swift, sql.",
                 BatchLanguageResponse,
             )
             if result and result.results:

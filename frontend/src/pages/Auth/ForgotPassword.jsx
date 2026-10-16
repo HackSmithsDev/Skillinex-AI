@@ -40,7 +40,7 @@ const ForgotPassword = () => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-card rounded-[2rem] shadow-xl p-10 border border-muted"
+        className="max-w-md w-full bg-card rounded-panel shadow-xl p-10 border border-muted"
       >
         <div className="w-16 h-16 bg-info-subtle rounded-2xl flex items-center justify-center mb-6 mx-auto">
           <KeyRound className="text-primary" size={32} />
@@ -74,7 +74,7 @@ const ForgotPassword = () => {
               <Input 
                 type="text" 
                 placeholder="000000" 
-                className="h-14 text-center text-2xl tracking-[1em] font-bold"
+                className="h-14 text-center text-2xl tracking-max font-bold"
                 maxLength={6}
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}

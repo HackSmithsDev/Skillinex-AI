@@ -11,7 +11,7 @@ export const SecurityModal = ({ title, subtitle, isOpen, onClose, children, type
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className={`bg-card border-2 border-primary w-full max-w-md p-8 shadow-[20px_20px_0px_var(--primary)] relative`}
+            className={`bg-card border-2 border-primary w-full max-w-md p-8 shadow-offset-primary-lg relative`}
           >
             <div className="flex justify-between items-start mb-8 border-b-2 border-primary pb-4">
               <div className="space-y-1">
@@ -19,7 +19,7 @@ export const SecurityModal = ({ title, subtitle, isOpen, onClose, children, type
                   {type === 'danger' ? <ShieldAlert className="text-danger" size={20} /> : (Icon && <Icon size={20} />)}
                   {title}
                 </h3>
-                <p className="text-[10px] font-black uppercase tracking-widest text-subtle">{subtitle}</p>
+                <p className="text-compact font-black uppercase tracking-widest text-subtle">{subtitle}</p>
               </div>
               <button onClick={onClose} className="hover:rotate-90 transition-transform"><X size={24} /></button>
             </div>

@@ -51,7 +51,7 @@ const ResetPassword = () => {
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-md w-full"
       >
-        <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+        <Card className="border-none shadow-2xl rounded-dialog overflow-hidden">
           <div className="bg-primary p-8 text-primary-foreground text-center space-y-2">
             <div className="w-16 h-16 bg-card/20 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm">
               <ShieldCheck size={32} />

@@ -56,7 +56,7 @@ export default function ForgotPassword({ navigation }) {
         <TouchableOpacity 
           onPress={() => step === 2 ? setStep(1) : navigation.goBack()}
           activeOpacity={0.7}
-          className="mb-10 w-12 h-12 border-2 border-primary items-center justify-center bg-card shadow-[2px_2px_0px_0px_rgb(var(--primary))]"
+          className="mb-10 w-12 h-12 border-2 border-primary items-center justify-center bg-card shadow-offset-primary-sm"
         >
           <ChevronLeft size={24} strokeWidth={3} className="text-primary" />
         </TouchableOpacity>
@@ -71,13 +71,13 @@ export default function ForgotPassword({ navigation }) {
             )}
           </View>
           
-          <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-[0.85]">
+          <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-heading">
             {step === 1 ? "RECOVERY\n" : "VERIFY\n"}
             <Text className="text-primary">{step === 1 ? "PROTOCOL" : "NODE"}</Text>
           </Text>
           
           <View className="bg-surface border-l-4 border-primary p-4 mt-6">
-            <Text className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-4">
+            <Text className="text-compact font-bold uppercase tracking-widest text-muted-foreground leading-4">
               {step === 1 
                 ? "Identity verification required. Instructions will be dispatched via encrypted link." 
                 : `A 6-digit verification code has been transmitted to: ${email.toLowerCase()}`}
@@ -89,13 +89,13 @@ export default function ForgotPassword({ navigation }) {
         <View>
           {error ? (
             <View className="bg-danger-subtle border-2 border-danger p-4 mb-6">
-              <Text className="text-danger font-black text-[10px] uppercase tracking-widest text-center">{error}</Text>
+              <Text className="text-danger font-black text-compact uppercase tracking-widest text-center">{error}</Text>
             </View>
           ) : null}
 
           {step === 1 ? (
             <View>
-              <Text className="text-[8px] font-black text-subtle uppercase tracking-[2px] mb-2 ml-1">Email_Address</Text>
+              <Text className="text-caption font-black text-subtle uppercase tracking-wide mb-2 ml-1">Email_Address</Text>
               <View className="relative">
                 <View className="absolute left-4 top-5 z-10">
                   <Mail size={18} className="text-subtle" />
@@ -106,7 +106,7 @@ export default function ForgotPassword({ navigation }) {
                   autoCapitalize="none"
                   autoCorrect={false}
                   keyboardType="email-address"
-                  className="bg-card border-2 border-primary h-16 pl-12 pr-4 font-bold text-foreground text-sm shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+                  className="bg-card border-2 border-primary h-16 pl-12 pr-4 font-bold text-foreground text-sm shadow-offset-primary"
                   onChangeText={setEmail}
                   value={email}
                 />
@@ -120,7 +120,7 @@ export default function ForgotPassword({ navigation }) {
               >
                 <Text className="text-primary-foreground font-black uppercase italic tracking-widest mr-2">Request_Link</Text>
                 {loading ? (
-                  <ActivityIndicator color={colors['primary-foreground'] || '#FAFAFA'} />
+                  <ActivityIndicator color={colors['primary-foreground']} />
                 ) : (
                   <ArrowRight size={18} className="text-primary-foreground" />
                 )}
@@ -128,12 +128,12 @@ export default function ForgotPassword({ navigation }) {
             </View>
           ) : (
             <View>
-              <Text className="text-[8px] font-black text-subtle uppercase tracking-[2px] mb-2 ml-1">Secure_OTP_Entry</Text>
+              <Text className="text-caption font-black text-subtle uppercase tracking-wide mb-2 ml-1">Secure_OTP_Entry</Text>
               <TextInput
                 placeholder="000000"
                 placeholderClassName="text-border"
                 autoFocus={true}
-                className="bg-card border-2 border-primary h-24 text-center font-black text-foreground tracking-[0.5em] text-4xl shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+                className="bg-card border-2 border-primary h-24 text-center font-black text-foreground tracking-display-em text-4xl shadow-offset-primary"
                 maxLength={6}
                 keyboardType="number-pad"
                 onChangeText={setCode}
@@ -153,7 +153,7 @@ export default function ForgotPassword({ navigation }) {
                 activeOpacity={0.7}
                 className="mt-6 py-2 self-center"
               >
-                <Text className="text-subtle font-black uppercase text-[10px] tracking-widest text-center">
+                <Text className="text-subtle font-black uppercase text-compact tracking-widest text-center">
                   Wrong Email? <Text className="text-foreground">Reconfigure_Target</Text>
                 </Text>
               </TouchableOpacity>

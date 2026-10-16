@@ -2,6 +2,7 @@ import api from './axios';
 
 const userService = {
   me: async () => (await api.get('/user/me')).data,
+  updateProfile: async (payload) => (await api.patch('/user/me', payload)).data,
   dashboard: async () => (await api.get('/user/dashboard')).data,
   achievements: async () => (await api.get('/user/achievements/')).data,
   trending: async () => (await api.get('/user/trending')).data,

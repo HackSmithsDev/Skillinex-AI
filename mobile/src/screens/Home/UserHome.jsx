@@ -4,7 +4,7 @@ import { View, Text, ScrollView, Image, TouchableOpacity, Dimensions, RefreshCon
 import { Trophy, Zap, PlayCircle, Clock, BookOpen, ChevronRight, Plus } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import userService from '../../api/userService';
-import { resolveMediaUrl } from '../../api/axios';
+import { errorMessage, resolveMediaUrl } from '../../api/axios';
 
 const { width } = Dimensions.get('window');
 
@@ -13,14 +13,17 @@ export default function UserHome({ navigation }) {
   const [course, setCourse] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(async () => {
     try {
       const data = await userService.dashboard();
       setStats(data.stats);
       setCourse(data.currentCourse);
+      setLoadError('');
     } catch (e) {
       console.log('Dashboard sync failed', e?.message);
+      setLoadError(errorMessage(e));
     }
   }, []);
 
@@ -47,7 +50,7 @@ export default function UserHome({ navigation }) {
         <Text className="text-3xl font-black text-foreground uppercase italic tracking-tighter">
           Welcome back, {stats?.name || 'Operator'}! 👋
         </Text>
-        <Text className="text-[10px] font-bold text-subtle uppercase tracking-widest mt-1">
+        <Text className="text-compact font-bold text-subtle uppercase tracking-widest mt-1">
           {stats?.dailyGoalStatus || 'System Status: Syncing'}
         </Text>
         
@@ -59,7 +62,7 @@ export default function UserHome({ navigation }) {
           >
             <Trophy size={16} className="text-highlight" />
             {/* FIXED: added text-foreground */}
-            <Text className="ml-2 font-black text-[10px] uppercase text-foreground">
+            <Text className="ml-2 font-black text-compact uppercase text-foreground">
               {(stats?.totalXP ?? 0).toLocaleString()} XP
             </Text>
           </TouchableOpacity>
@@ -70,10 +73,15 @@ export default function UserHome({ navigation }) {
             className="flex-1 h-12 bg-primary border-2 border-primary flex-row items-center justify-center"
           >
             <Zap size={16} className="text-primary-foreground" />
-            <Text className="ml-2 font-black text-[10px] uppercase text-primary-foreground">Resume</Text>
+            <Text className="ml-2 font-black text-compact uppercase text-primary-foreground">Resume</Text>
           </TouchableOpacity>
         </View>
       </View>
+      {loadError ? (
+        <Text accessibilityRole="alert" className="mb-6 border-2 border-danger bg-danger-subtle p-4 text-xs font-bold text-danger">
+          {loadError}
+        </Text>
+      ) : null}
 
       {/* 2. CURRENT COURSE CARD (The "Active Node") */}
       {course ? (
@@ -88,7 +96,7 @@ export default function UserHome({ navigation }) {
           </View>
           {/* FIXED: added text-primary-foreground */}
           <View className="absolute top-4 right-4 bg-primary px-3 py-1 border-2 border-primary">
-            <Text className="text-[10px] font-black uppercase italic text-primary-foreground">{course.difficulty}</Text>
+            <Text className="text-compact font-black uppercase italic text-primary-foreground">{course.difficulty}</Text>
           </View>
         </TouchableOpacity>
 
@@ -100,8 +108,8 @@ export default function UserHome({ navigation }) {
           {/* Brutalist Progress Bar */}
           <View className="mb-4">
             <View className="flex-row justify-between mb-2">
-              <Text className="text-[8px] font-black uppercase text-subtle">Sync_Progress</Text>
-              <Text className="text-[8px] font-black text-foreground">{course.progress}%</Text>
+              <Text className="text-caption font-black uppercase text-subtle">Sync_Progress</Text>
+              <Text className="text-caption font-black text-foreground">{course.progress}%</Text>
             </View>
             <View className="h-4 bg-muted border-2 border-primary">
               <View 
@@ -115,19 +123,19 @@ export default function UserHome({ navigation }) {
             <View className="flex-row items-center">
               <Clock size={12} className="text-primary" />
               {/* FIXED: added text-foreground */}
-              <Text className="ml-1 text-[10px] font-bold uppercase text-foreground">{course.timeLeft} left</Text>
+              <Text className="ml-1 text-compact font-bold uppercase text-foreground">{course.timeLeft} left</Text>
             </View>
             <View className="flex-row items-center">
               <BookOpen size={12} className="text-primary" />
               {/* FIXED: added text-foreground */}
-              <Text className="ml-1 text-[10px] font-bold uppercase text-foreground">{course.completedLectures}/{course.totalLectures} Lectures</Text>
+              <Text className="ml-1 text-compact font-bold uppercase text-foreground">{course.completedLectures}/{course.totalLectures} Lectures</Text>
             </View>
           </View>
         </View>
       </View>
       ) : (
         <TouchableOpacity onPress={() => navigation.navigate('VAULT')} className="mb-8 h-32 border-4 border-dashed border-line-strong items-center justify-center">
-          <Text className="text-[10px] font-black uppercase text-subtle">No_Active_Node // Open_Vault</Text>
+          <Text className="text-compact font-black uppercase text-subtle">No_Active_Node // Open_Vault</Text>
         </TouchableOpacity>
       )}
 
@@ -135,12 +143,12 @@ export default function UserHome({ navigation }) {
       <View className="flex-row gap-4 mb-8">
         <View className="flex-1 p-4 border-2 border-primary bg-surface">
           <Trophy size={18} className="text-success-strong" />
-          <Text className="mt-2 text-[8px] font-black text-success-strong uppercase">Top Subject</Text>
+          <Text className="mt-2 text-caption font-black text-success-strong uppercase">Top Subject</Text>
           <Text className="text-sm font-black text-foreground uppercase italic">{stats?.topCategory || '—'}</Text>
         </View>
         <View className="flex-1 p-4 border-2 border-primary bg-warning-subtle">
           <Zap size={18} className="text-warning-strong" />
-          <Text className="mt-2 text-[8px] font-black text-warning-strong uppercase">Test Avg</Text>
+          <Text className="mt-2 text-caption font-black text-warning-strong uppercase">Test Avg</Text>
           <Text className="text-sm font-black text-foreground uppercase italic">{stats?.avgScore ?? 0}%</Text>
         </View>
       </View>
@@ -159,7 +167,7 @@ export default function UserHome({ navigation }) {
 
         <TouchableOpacity onPress={() => setGoalDialogOpen(true)} className="mt-4 h-16 border-2 border-dashed border-line-strong flex-row items-center justify-center gap-2">
           <Plus size={16} className="text-subtle" />
-          <Text className="text-[10px] font-black uppercase text-subtle">Add Custom Goal</Text>
+          <Text className="text-compact font-black uppercase text-subtle">Add Custom Goal</Text>
         </TouchableOpacity>
       </View>
       
@@ -169,7 +177,7 @@ export default function UserHome({ navigation }) {
             <Text className="text-sm font-black uppercase tracking-widest text-foreground">Custom_Goals</Text>
             <Text className="text-xs text-subtle text-center mt-3">This feature is a work in progress and is unavailable right now. Check back soon!</Text>
             <TouchableOpacity onPress={() => setGoalDialogOpen(false)} className="mt-6 h-12 w-full bg-primary items-center justify-center">
-              <Text className="text-primary-foreground font-black uppercase tracking-widest text-[10px]">Got it</Text>
+              <Text className="text-primary-foreground font-black uppercase tracking-widest text-compact">Got it</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -186,7 +194,7 @@ const GoalItem = ({ label, done, border = true }) => (
     <View className={`w-5 h-5 border-2 border-primary mr-4 items-center justify-center ${done ? 'bg-primary' : 'bg-card'}`}>
       {done && <View className="w-2 h-2 bg-card" />}
     </View>
-    <Text className={`text-[11px] font-black uppercase ${done ? 'text-line-strong line-through italic' : 'text-foreground'}`}>
+    <Text className={`text-detail font-black uppercase ${done ? 'text-line-strong line-through italic' : 'text-foreground'}`}>
       {label}
     </Text>
   </View>

@@ -12,7 +12,7 @@ import {
 import { AuthContext } from '../../context/AuthContext';
 import { resolveMediaUrl, errorMessage } from '../../api/axios';
 import userService from '../../api/userService';
-import useThemeColors from '../../theme/useThemeColors';
+import { nativeTheme, useThemeColors } from '../../theme/useThemeColors';
 
 export default function Profile({ navigation }) {
   const { user, logout, fetchUser } = useContext(AuthContext);
@@ -26,6 +26,10 @@ export default function Profile({ navigation }) {
   const [comment, setComment] = useState('');
   const [purgePw, setPurgePw] = useState('');
   const [busy, setBusy] = useState(false);
+  const [addingModule, setAddingModule] = useState(false);
+  const [moduleName, setModuleName] = useState('');
+  const [moduleLevel, setModuleLevel] = useState('Beginner');
+  const [moduleBusy, setModuleBusy] = useState(false);
 
   useEffect(() => {
     userService.dashboard().then(setDash).catch(() => {});
@@ -80,6 +84,27 @@ export default function Profile({ navigation }) {
     logout();
   };
 
+  const submitModule = async () => {
+    const name = moduleName.trim();
+    if (!name || moduleBusy) return;
+    if (Object.keys(user?.tech_stack || {}).some((item) => item.toLowerCase() === name.toLowerCase())) {
+      Alert.alert('Already added', 'That skill is already in your integrated stack.');
+      return;
+    }
+
+    setModuleBusy(true);
+    try {
+      await userService.updateProfile({ tech_stack: { [name]: moduleLevel } });
+      await fetchUser();
+      setModuleName('');
+      setAddingModule(false);
+    } catch (e) {
+      Alert.alert('Update failed', errorMessage(e));
+    } finally {
+      setModuleBusy(false);
+    }
+  };
+
   const level = Math.floor((user?.xp_points || 0) / 100) + 1;
   const systemMetrics = [
     { label: "SKILLS", value: ach?.skills?.length ?? 0, bar: 'bg-success' },
@@ -96,21 +121,18 @@ export default function Profile({ navigation }) {
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
-          className="h-10 w-10 border-2 border-primary items-center justify-center bg-card shadow-[2px_2px_0px_0px_rgb(var(--primary))]"
+          className="h-10 w-10 border-2 border-primary items-center justify-center bg-card shadow-offset-primary-sm"
         >
           <ChevronLeft size={20} strokeWidth={3} className="text-primary" />
         </TouchableOpacity>
         
-        <Text className="text-[10px] font-black uppercase tracking-[3px] text-foreground">
+        <Text className="text-compact font-black uppercase tracking-expanded text-foreground">
           User_Protocol_v4.0
         </Text>
 
-        <TouchableOpacity 
-          activeOpacity={0.8}
-          className="h-10 w-10 border-2 border-primary items-center justify-center bg-primary"
-        >
+        <View className="h-10 w-10 border-2 border-primary items-center justify-center bg-primary">
           <Settings size={18} className="text-primary-foreground" />
-        </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -119,12 +141,12 @@ export default function Profile({ navigation }) {
         <View className="px-8 pt-10 pb-8 bg-surface border-b-2 border-border">
           <View className="flex-row items-center mb-4">
             <View className="h-2 w-2 bg-primary mr-3 animate-pulse" />
-            <Text className="text-[9px] font-black uppercase tracking-[2px] text-subtle">
+            <Text className="text-label font-black uppercase tracking-wide text-subtle">
               Session_Node // {user?.id?.toString().substring(0,12) || "CORE_SYNC_ACTIVE"}
             </Text>
           </View>
 
-          <Text className="text-7xl font-black uppercase italic tracking-tighter leading-[0.75] text-foreground">
+          <Text className="text-7xl font-black uppercase italic tracking-tighter leading-ultra-tight text-foreground">
             {user?.full_name?.split(' ')[0] || "USER"}{'\n'}
             <Text className="text-border">CORE</Text>
           </Text>
@@ -133,13 +155,13 @@ export default function Profile({ navigation }) {
         {/* 3. HARDWARE CORE (Avatar & XP) */}
         <View className="p-6 flex-row gap-4">
           <View className="relative">
-            <View className="w-32 h-32 border-4 border-primary bg-card p-1 shadow-[6px_6px_0px_0px_rgb(var(--success))]">
+            <View className="w-32 h-32 border-4 border-primary bg-card p-1 shadow-offset-success-lg">
               <View className="flex-1 bg-muted overflow-hidden items-center justify-center">
                 <Image 
                   source={{ uri: avatarUri }}
                   className="w-24 h-24"
                 />
-                <View className="absolute top-0 left-0 w-full h-[1px] bg-primary/50" style={{ top: '40%' }} />
+                <View className="absolute top-2/5 left-0 w-full h-px bg-primary/50" />
               </View>
             </View>
             <TouchableOpacity 
@@ -158,14 +180,14 @@ export default function Profile({ navigation }) {
 
           <View className="flex-1 bg-primary p-5 border-b-8 border-primary shadow-xl justify-between">
             <View className="flex-row justify-between items-center">
-               <Text className="text-[8px] font-black text-success uppercase tracking-[2px]">Neural_Credits</Text>
+               <Text className="text-caption font-black text-success uppercase tracking-wide">Neural_Credits</Text>
                <Zap size={14} fill="currentColor" className="text-highlight" />
             </View>
             <View>
               <Text className="text-5xl font-black italic text-primary-foreground leading-none tracking-tighter">
                 {user?.xp_points || 0}
               </Text>
-              <Text className="text-[10px] font-black text-primary-foreground/40 uppercase mt-1">Level_{level}</Text>
+              <Text className="text-compact font-black text-primary-foreground/40 uppercase mt-1">Level_{level}</Text>
             </View>
           </View>
         </View>
@@ -173,11 +195,11 @@ export default function Profile({ navigation }) {
         {/* 4. SYSTEM METRICS GRID */}
         <View className="flex-row px-6 mb-8 gap-3">
           {systemMetrics.map((s, i) => (
-            <View key={i} className="flex-1 bg-card border-2 border-primary p-4 shadow-[4px_4px_0px_0px_rgb(var(--primary)/0.05)]">
-              <Text className="text-[8px] font-black text-subtle uppercase mb-1 tracking-[1px]">{s.label}</Text>
+            <View key={i} className="flex-1 bg-card border-2 border-primary p-4 shadow-offset-primary-muted">
+              <Text className="text-caption font-black text-subtle uppercase mb-1 tracking-compact">{s.label}</Text>
               <Text className="text-xl font-black text-foreground italic">{s.value}</Text>
               <View className="h-1 w-full bg-muted mt-2">
-                <View className={`h-full ${s.bar}`} style={{ width: '60%' }} />
+                <View className={`h-full w-3/5 ${s.bar}`} />
               </View>
             </View>
           ))}
@@ -187,27 +209,64 @@ export default function Profile({ navigation }) {
         <View className="px-6 mb-10">
           <View className="flex-row items-center mb-5">
             <Cpu size={16} strokeWidth={3} className="text-primary" />
-            <Text className="ml-3 text-[10px] font-black uppercase tracking-[3px] text-foreground">Integrated_Stack</Text>
+            <Text className="ml-3 text-compact font-black uppercase tracking-expanded text-foreground">Integrated_Stack</Text>
           </View>
           <View className="flex-row flex-wrap gap-2">
             {stack.length ? stack.map(([tech, lvl]) => (
               <View key={tech} className="bg-surface border-2 border-primary px-4 py-2 flex-row items-center">
                 <View className="h-1.5 w-1.5 bg-primary mr-2 rounded-full" />
-                <Text className="text-[10px] font-black uppercase italic text-foreground">{tech} // {lvl}</Text>
+                <Text className="text-compact font-black uppercase italic text-foreground">{tech} // {lvl}</Text>
               </View>
-            )) : <Text className="text-[10px] italic text-subtle font-bold">Waiting for Stack Sync...</Text>}
+            )) : <Text className="text-compact italic text-subtle font-bold">Waiting for Stack Sync...</Text>}
             
-            <TouchableOpacity activeOpacity={0.7} className="border-2 border-dashed border-line-strong px-4 py-2 bg-surface/50">
-              <Text className="text-[10px] font-black text-subtle uppercase">+ Add_Module</Text>
+            <TouchableOpacity
+              onPress={() => setAddingModule((open) => !open)}
+              activeOpacity={0.7}
+              className="border-2 border-dashed border-line-strong px-4 py-2 bg-surface/50"
+            >
+              <Text className="text-compact font-black text-subtle uppercase">{addingModule ? 'Cancel' : '+ Add_Module'}</Text>
             </TouchableOpacity>
           </View>
+          {addingModule && (
+            <View className="mt-4 border-2 border-primary bg-surface p-4">
+              <TextInput
+                value={moduleName}
+                onChangeText={setModuleName}
+                placeholder="SKILL_NAME"
+                placeholderClassName="text-subtle"
+                className="border-2 border-primary bg-card px-3 py-2 text-foreground font-bold"
+              />
+              <View className="mt-3 flex-row">
+                {['Beginner', 'Intermediate', 'Advanced'].map((level) => (
+                  <TouchableOpacity
+                    key={level}
+                    onPress={() => setModuleLevel(level)}
+                    className={`flex-1 py-3 items-center border border-primary ${moduleLevel === level ? 'bg-primary' : 'bg-card'}`}
+                  >
+                    <Text className={`text-caption font-black uppercase ${moduleLevel === level ? 'text-primary-foreground' : 'text-foreground'}`}>
+                      {level}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TouchableOpacity
+                onPress={submitModule}
+                disabled={moduleBusy || !moduleName.trim()}
+                className="mt-3 h-11 items-center justify-center bg-primary"
+              >
+                {moduleBusy
+                  ? <ActivityIndicator color={colors['primary-foreground']} />
+                  : <Text className="text-compact font-black uppercase text-primary-foreground">Save_Module</Text>}
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* 6. SYSTEM DIRECTIVES */}
         <View className="px-6 pb-20">
           <View className="flex-row items-center mb-5">
             <Layers size={16} strokeWidth={3} className="text-primary" />
-            <Text className="ml-3 text-[10px] font-black uppercase tracking-[3px] text-foreground">System_Directives</Text>
+            <Text className="ml-3 text-compact font-black uppercase tracking-expanded text-foreground">System_Directives</Text>
           </View>
           
           {panel && (
@@ -233,7 +292,7 @@ export default function Profile({ navigation }) {
                 </>
               ) : panel === 'delete' ? (
                 <>
-                  <Text className="text-[10px] font-black uppercase text-danger mb-3">Warning: permanently purges your account and all learning data.</Text>
+                  <Text className="text-compact font-black uppercase text-danger mb-3">Warning: permanently purges your account and all learning data.</Text>
                   <TextInput 
                     value={purgePw} 
                     onChangeText={setPurgePw} 
@@ -251,7 +310,7 @@ export default function Profile({ navigation }) {
                   placeholder="YOUR_FEEDBACK" 
                   placeholderClassName="text-subtle" 
                   className="border-2 border-primary bg-card p-3 mb-3 h-24 text-foreground font-bold" 
-                  style={{ textAlignVertical: 'top' }} 
+                  style={nativeTheme.controls.multilineInput}
                 />
               )}
               
@@ -264,7 +323,7 @@ export default function Profile({ navigation }) {
                 {busy ? (
                   <ActivityIndicator color={colors['primary-foreground']} />
                 ) : (
-                  <Text className="text-primary-foreground font-black uppercase tracking-[2px] text-xs">
+                  <Text className="text-primary-foreground font-black uppercase tracking-wide text-xs">
                     {panel === 'delete' ? 'Confirm_Purge' : 'Submit'}
                   </Text>
                 )}

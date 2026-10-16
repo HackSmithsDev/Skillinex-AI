@@ -7,12 +7,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { 
   Home, BookOpen, Zap, FlaskConical, 
-  Trophy, User as UserIcon 
+  Trophy, User as UserIcon, Bot
 } from 'lucide-react-native';
 
 // System Context
 import { AuthProvider, AuthContext } from './src/context/AuthContext';
-import { useThemeColors } from './src/theme/useThemeColors';
+import { nativeTheme, useThemeColors } from './src/theme/useThemeColors';
 
 // Screen Imports
 import Landing from './src/screens/Home/Landing';
@@ -31,6 +31,7 @@ import QuizSession from './src/screens/Test/QuizSession';
 import TestResult from './src/screens/Test/TestResult';
 import Achievements from './src/screens/Dashboard/Achievements';
 import Profile from './src/screens/Dashboard/Profile';
+import AIMentor from './src/screens/AI/AIMentor';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -44,12 +45,24 @@ const SkillinexHeader = ({ navigation }) => (
         </Text>
       </TouchableOpacity>
       
-      <TouchableOpacity 
-        onPress={() => navigation.navigate('Profile')}
-        className="h-10 w-10 bg-card border-2 border-primary justify-center items-center shadow-[3px_3px_0px_0px_rgb(var(--primary))]"
-      >
-        <UserIcon size={20} strokeWidth={2.5} className="text-primary" />
-      </TouchableOpacity>
+      <View className="flex-row items-center gap-3">
+        <TouchableOpacity
+          onPress={() => navigation.navigate('AIMentor')}
+          accessibilityRole="button"
+          accessibilityLabel="Open AI mentor"
+          className="h-10 w-10 bg-card border-2 border-primary justify-center items-center shadow-offset-primary-compact"
+        >
+          <Bot size={20} strokeWidth={2.5} className="text-primary" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Profile')}
+          accessibilityRole="button"
+          accessibilityLabel="Open profile"
+          className="h-10 w-10 bg-card border-2 border-primary justify-center items-center shadow-offset-primary-compact"
+        >
+          <UserIcon size={20} strokeWidth={2.5} className="text-primary" />
+        </TouchableOpacity>
+      </View>
     </View>
   </SafeAreaView>
 );
@@ -61,21 +74,13 @@ function MainTabs({ navigation }) {
       screenOptions={({ route }) => ({
         header: () => <SkillinexHeader navigation={navigation} />,
         tabBarStyle: {
-          height: 90,
-          paddingBottom: 30,
-          paddingTop: 12,
-          borderTopWidth: 4,
+          ...nativeTheme.navigation.tabBar,
           borderTopColor: colors.primary,
           backgroundColor: colors.card,
         },
         tabBarActiveTintColor: colors.success,
         tabBarInactiveTintColor: colors.subtle,
-        tabBarLabelStyle: { 
-          fontSize: 10, 
-          fontWeight: '900', 
-          textTransform: 'uppercase',
-          letterSpacing: 0.5 
-        },
+        tabBarLabelStyle: nativeTheme.navigation.tabBarLabel,
       })}
     >
       <Tab.Screen 
@@ -89,12 +94,12 @@ function MainTabs({ navigation }) {
         options={{ tabBarIcon: ({color}) => <BookOpen color={color} size={22} strokeWidth={2.5} /> }} 
       />
       <Tab.Screen 
-        name="PRACTICE" 
+        name="LAB"
         component={Practice} 
         options={{ tabBarIcon: ({color}) => <Zap color={color} size={22} strokeWidth={2.5} /> }} 
       />
       <Tab.Screen 
-        name="LAB" 
+        name="TESTS"
         component={TestDashboard} 
         options={{ tabBarIcon: ({color}) => <FlaskConical color={color} size={22} strokeWidth={2.5} /> }} 
       />
@@ -109,11 +114,12 @@ function MainTabs({ navigation }) {
 
 function RootNavigator() {
   const { user, loading } = useContext(AuthContext);
+  const colors = useThemeColors();
 
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <ActivityIndicator size="large" color="rgb(15, 23, 43)" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -128,6 +134,7 @@ function RootNavigator() {
           <Stack.Screen name="QuizSession" component={QuizSession} />
           <Stack.Screen name="TestResult" component={TestResult} />
           <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="AIMentor" component={AIMentor} />
         </>
       ) : (
         <>
@@ -144,7 +151,7 @@ function RootNavigator() {
 
 export default function App() {
   return (
-    <GestureHandlerRootView className="flex-1 bg-background" style={{ flex: 1 }}>
+    <GestureHandlerRootView className="flex-1 bg-background">
       <AuthProvider>
         <NavigationContainer>
           <RootNavigator />

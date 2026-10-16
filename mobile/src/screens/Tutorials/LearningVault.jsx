@@ -74,7 +74,7 @@ export default function LearningVault({ navigation }) {
         <View className="flex-row justify-between items-start mb-6">
           <View>
             <View className="bg-primary self-start px-3 py-1 mb-2">
-              <Text className="text-[8px] font-black text-success uppercase tracking-widest">Active_Terminal</Text>
+              <Text className="text-caption font-black text-success uppercase tracking-widest">Active_Terminal</Text>
             </View>
             <Text className="text-4xl font-black text-foreground tracking-tighter uppercase italic">
               Learning{'\n'}Vault
@@ -92,13 +92,13 @@ export default function LearningVault({ navigation }) {
         {enrolledCourses.map((course) => (
           <View
             key={course.id}
-            className={`bg-card p-6 ${course.is_ready ? '' : 'opacity-60'} border-2 border-primary shadow-[6px_6px_0px_0px_rgb(var(--primary))]`}
+            className={`bg-card p-6 ${course.is_ready ? '' : 'opacity-60'} border-2 border-primary shadow-offset-primary-lg`}
           >
             <View className="flex-row justify-between items-center mb-4">
               <View className="p-3 bg-surface border border-border">
                 <Brain size={24} className={course.is_ready ? 'text-primary' : 'text-line-strong'} />
               </View>
-              <Text className="text-[9px] font-black uppercase tracking-widest text-subtle">
+              <Text className="text-label font-black uppercase tracking-widest text-subtle">
                 {course.is_ready ? (course.category || 'General') : 'Constructing'}
               </Text>
             </View>
@@ -106,20 +106,20 @@ export default function LearningVault({ navigation }) {
             <Text className="text-xl font-black text-foreground uppercase italic tracking-tighter mb-2">
               {course.title}
             </Text>
-            <Text className="text-[10px] text-muted-foreground font-bold leading-4 mb-6">
+            <Text className="text-compact text-muted-foreground font-bold leading-4 mb-6">
               {course.is_ready ? (course.description || 'Comprehensive modular learning path.') : 'Roadmap generation in progress...'}
             </Text>
 
             {/* PROGRESS SECTION */}
             <View className="mb-6">
               <View className="flex-row justify-between mb-2">
-                <Text className="text-[8px] font-black text-subtle uppercase">Sync_Progress</Text>
-                <Text className="text-[8px] font-black text-foreground uppercase">{Math.round(course.progress || 0)}%</Text>
+                <Text className="text-caption font-black text-subtle uppercase">Sync_Progress</Text>
+                <Text className="text-caption font-black text-foreground uppercase">{Math.round(course.progress || 0)}%</Text>
               </View>
               <View className="h-2 bg-muted w-full">
                 <View 
                   className="h-2" 
-                  style={{ width: `${Math.round(course.progress || 0)}%`, backgroundColor: course.accent || 'rgb(var(--primary))' }} 
+                  style={{ width: `${Math.round(course.progress || 0)}%`, backgroundColor: course.accent || colors.primary }}
                 />
               </View>
             </View>
@@ -128,7 +128,7 @@ export default function LearningVault({ navigation }) {
               <View className="flex-row gap-4">
                 <View className="flex-row items-center">
                   <Layout size={12} className="text-subtle" />
-                  <Text className="ml-1 text-[9px] font-black text-subtle uppercase">{course.nodes || course.chapters_count || 0}_Nodes</Text>
+                  <Text className="ml-1 text-label font-black text-subtle uppercase">{course.nodes || course.chapters_count || 0}_Nodes</Text>
                 </View>
               </View>
               
@@ -159,7 +159,7 @@ export default function LearningVault({ navigation }) {
               {['Beginner', 'Intermediate', 'Advanced'].map((lvl) => (
                 <TouchableOpacity key={lvl} onPress={() => setDifficulty(lvl)}
                   className={`flex-1 py-3 items-center border-2 border-primary ${difficulty === lvl ? 'bg-primary' : 'bg-card'}`}>
-                  <Text className={`text-[9px] font-black uppercase ${difficulty === lvl ? 'text-primary-foreground' : 'text-foreground'}`}>{lvl}</Text>
+                  <Text className={`text-label font-black uppercase ${difficulty === lvl ? 'text-primary-foreground' : 'text-foreground'}`}>{lvl}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -176,7 +176,7 @@ export default function LearningVault({ navigation }) {
             <Sparkles size={24} className="text-line-strong" />
           </View>
           <Text className="font-black text-subtle text-sm uppercase italic">Expand_Intelligence</Text>
-          <Text className="text-[8px] text-line-strong font-black uppercase tracking-widest mt-1">Unlock_New_Node</Text>
+          <Text className="text-caption text-line-strong font-black uppercase tracking-widest mt-1">Unlock_New_Node</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

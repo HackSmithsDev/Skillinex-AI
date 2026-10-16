@@ -43,3 +43,29 @@ async def get_active_lab_task(user_id: str) -> Optional[Any]:
 async def delete_active_lab_task(user_id: str):
     """Clears the active lab challenge."""
     await redis_client.delete(f"lab:active:{user_id}")
+
+
+async def set_verified_lab_run(user_id: str, task_id: str, expire_seconds: int = 300):
+    """Records a successful sandbox run for a short-lived, server-verified reward."""
+    await redis_client.set(f"lab:verified:{user_id}", task_id, ex=expire_seconds)
+
+
+async def consume_verified_lab_run(user_id: str) -> Optional[str]:
+    """Atomically consumes a verified run so it cannot be replayed."""
+    return await redis_client.getdel(f"lab:verified:{user_id}")
+
+
+async def claim_lab_reward(user_id: str, task_id: str, expire_seconds: int = 86400) -> bool:
+    """Allows XP to be claimed only once for a task during its cache lifetime."""
+    claimed = await redis_client.set(
+        f"lab:rewarded:{user_id}:{task_id}",
+        "1",
+        ex=expire_seconds,
+        nx=True,
+    )
+    return bool(claimed)
+
+
+async def release_lab_reward_claim(user_id: str, task_id: str):
+    """Releases a reward claim if persisting the XP update fails."""
+    await redis_client.delete(f"lab:rewarded:{user_id}:{task_id}")

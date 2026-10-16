@@ -196,12 +196,12 @@ const Profile = () => {
           <div className="space-y-4 flex-1">
             <div className="flex items-center gap-3">
                <div className="h-2 w-2 bg-primary animate-pulse" />
-               <span className="text-[10px] font-black uppercase tracking-[0.5em] text-subtle">
+               <span className="text-compact font-black uppercase tracking-display text-subtle">
                  User_Identity_Model // {user?.id ? String(user.id).substring(0,8) : "GUEST"}
                </span>
             </div>
             
-            <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter italic leading-[0.8] group">
+            <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter italic leading-display group">
               {user?.full_name?.split(' ')[0] || 'Learner'} <br />
               <span className="text-transparent stroke-text italic group-hover:text-foreground transition-all duration-300">Protocol</span>
             </h1>
@@ -211,14 +211,14 @@ const Profile = () => {
             <div className="flex gap-2">
               <button 
                 onClick={() => setModalType('account')}
-                className="flex items-center gap-3 px-6 py-3 border-2 border-primary font-black uppercase text-[10px] tracking-widest hover:bg-primary hover:text-primary-foreground transition-all"
+                className="flex items-center gap-3 px-6 py-3 border-2 border-primary font-black uppercase text-compact tracking-widest hover:bg-primary hover:text-primary-foreground transition-all"
               >
                 <Settings size={16} /> Configure_Identity
               </button>
             </div>
             <div className="flex gap-8 border-l-2 border-muted pl-4 py-1">
                <div>
-                  <p className="text-[8px] font-black uppercase tracking-widest text-primary-foreground bg-primary px-1 mb-1 flex items-center gap-2"><Database size={12}/> Sync_Date</p>
+                  <p className="text-caption font-black uppercase tracking-widest text-primary-foreground bg-primary px-1 mb-1 flex items-center gap-2"><Database size={12}/> Sync_Date</p>
                   <p className="text-sm font-black uppercase tracking-tighter">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : "05/2026"}</p>
                </div>
             </div>
@@ -232,13 +232,10 @@ const Profile = () => {
             <section className="flex flex-col md:flex-row gap-10 items-start">
               <div className="relative w-52 h-52 shrink-0 group mx-auto md:mx-0">
                 <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary" />
-                <div 
-                    className="w-44 h-44 bg-muted border-2 border-primary overflow-hidden relative"
-                    style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%)' }}
-                >
+                <div className="profile-avatar-cutout w-44 h-44 bg-muted border-2 border-primary overflow-hidden relative">
                     <img 
                       src={cleanAvatarUrl(user?.photo_url)} 
-                      className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300" 
+                      className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
                       alt="User Matrix" 
                     />
                 </div>
@@ -262,18 +259,18 @@ const Profile = () => {
               <div className="flex-1 space-y-6 w-full">
                 <div className="flex flex-wrap gap-6 border-b border-muted pb-4">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-subtle flex items-center gap-1.5"><Calendar size={12}/> Age Metrics</p>
+                    <p className="text-compact font-black uppercase tracking-widest text-subtle flex items-center gap-1.5"><Calendar size={12}/> Age Metrics</p>
                     <p className="text-sm font-bold text-soft mt-1">{user?.age ? `${user.age} Years` : "Not Configured"}</p>
                   </div>
 
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-subtle flex items-center gap-1.5"><Smile size={12}/> Gender Anchor</p>
+                    <p className="text-compact font-black uppercase tracking-widest text-subtle flex items-center gap-1.5"><Smile size={12}/> Gender Anchor</p>
                     <p className="text-sm font-bold text-soft mt-1">{user?.gender || "Not Configured"}</p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-subtle">Identity_Brief</p>
+                  <p className="text-compact font-black uppercase tracking-expanded text-subtle">Identity_Brief</p>
                   <p className="text-md font-medium leading-relaxed italic text-soft max-w-2xl">{user?.bio || "// No description profile data indexed."}</p>
                 </div>
               </div>
@@ -287,7 +284,7 @@ const Profile = () => {
                 </h3>
                 <button 
                   onClick={() => { setGraphData(user?.tech_stack || {}); setModalType('graph'); }}
-                  className="text-[9px] border-2 border-primary px-3 py-1 uppercase font-black tracking-wider bg-surface hover:bg-inverse hover:text-primary-foreground transition-colors flex items-center gap-1.5 shadow-[2px_2px_0px_0px_var(--primary)]"
+                  className="text-label border-2 border-primary px-3 py-1 uppercase font-black tracking-wider bg-surface hover:bg-inverse hover:text-primary-foreground transition-colors flex items-center gap-1.5 shadow-offset-primary"
                 >
                   <Plus size={12} /> Configure Graph
                 </button>
@@ -296,13 +293,12 @@ const Profile = () => {
               <div className="flex flex-wrap gap-3">
                 {user?.tech_stack && Object.keys(user.tech_stack).length > 0 ? (
                   Object.entries(user.tech_stack).map(([node, lvl]) => (
-                    <div 
-                      key={node} 
-                      className="px-5 py-2.5 bg-surface text-foreground border-2 border-primary text-xs font-black uppercase tracking-wider rounded-none flex items-center gap-2"
-                      style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
+                    <div
+                      key={node}
+                      className="profile-tech-chip-cutout px-5 py-2.5 bg-surface text-foreground border-2 border-primary text-xs font-black uppercase tracking-wider rounded-none flex items-center gap-2"
                     >
                       {node}
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-black uppercase tracking-tight
+                      <span className={`text-label px-1.5 py-0.5 rounded border font-black uppercase tracking-tight
                         ${lvl === 'Beginner' ? 'bg-info-soft text-info-strong border-info-soft' :
                           lvl === 'Intermediate' ? 'bg-plum-soft text-plum-strong border-plum-soft' :
                           'bg-success-soft text-success-strong border-success-soft'
@@ -323,14 +319,14 @@ const Profile = () => {
           <aside className="lg:col-span-4 space-y-12">
             <div className="bg-inverse text-primary-foreground p-8 border-b-8 border-success">
                <div className="flex justify-between items-start mb-12">
-                 <p className="text-[9px] font-black uppercase tracking-[0.5em] text-primary-foreground/40">XP_Core_v1</p>
+                 <p className="text-label font-black uppercase tracking-display text-primary-foreground/40">XP_Core_v1</p>
                  <Zap size={20} className="text-highlight fill-highlight" />
                </div>
                <span className="text-7xl font-black italic tracking-tighter leading-none">{user?.xp_points || 0}</span>
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-subtle px-2 mb-2">System_Directives</h3>
+              <h3 className="text-compact font-black uppercase tracking-expanded text-subtle px-2 mb-2">System_Directives</h3>
               <div className="grid grid-cols-1 gap-1">
                 <DirectiveBtn icon={<Edit3 size={14}/>} label="Account Details" onClick={() => setModalType('account')} />
                 <DirectiveBtn icon={<ShieldCheck size={14}/>} label="Security Protocol" onClick={() => setModalType('password')} />
@@ -355,7 +351,7 @@ const Profile = () => {
       >
         <form onSubmit={handleIdentityUpdate} className="space-y-4 text-left">
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-subtle italic">Full_Name_Entry</label>
+            <label className="text-compact font-black uppercase text-subtle italic">Full_Name_Entry</label>
             <input 
               type="text"
               className="w-full border-2 border-border p-3 font-mono text-xs outline-none focus:border-primary bg-surface"
@@ -366,7 +362,7 @@ const Profile = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase text-subtle italic">Age</label>
+              <label className="text-compact font-black uppercase text-subtle italic">Age</label>
               <input 
                 type="number"
                 className="w-full border-2 border-border p-3 font-mono text-xs outline-none focus:border-primary bg-surface"
@@ -375,9 +371,9 @@ const Profile = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase text-subtle italic">Gender</label>
+              <label className="text-compact font-black uppercase text-subtle italic">Gender</label>
               <select
-                className="w-full border-2 border-border p-3 text-xs outline-none focus:border-primary bg-surface rounded-none h-[42px]"
+                className="w-full border-2 border-border p-3 text-xs outline-none focus:border-primary bg-surface rounded-none h-compact-row"
                 value={formData.gender}
                 onChange={(e) => setFormData({...formData, gender: e.target.value})}
               >
@@ -391,7 +387,7 @@ const Profile = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-subtle italic">Identity_Brief</label>
+            <label className="text-compact font-black uppercase text-subtle italic">Identity_Brief</label>
             <textarea 
               className="w-full border-2 border-border p-3 font-mono text-xs h-24 outline-none focus:border-primary bg-surface resize-none"
               value={formData.bio}
@@ -415,11 +411,11 @@ const Profile = () => {
       >
         <form onSubmit={handleGraphUpdate} className="space-y-6 text-left">
           <div className="flex justify-between items-center border-b pb-2 border-muted">
-            <span className="text-[9px] font-black uppercase tracking-wider text-subtle">Cycle through nodes to adjust tracking</span>
+            <span className="text-label font-black uppercase tracking-wider text-subtle">Cycle through nodes to adjust tracking</span>
             <button 
               type="button"
               onClick={handleAddCustomNode}
-              className="text-[9px] border px-2 py-1 uppercase font-black bg-inverse text-primary-foreground tracking-wider"
+              className="text-label border px-2 py-1 uppercase font-black bg-inverse text-primary-foreground tracking-wider"
             >
               + Add Custom Node
             </button>
@@ -434,7 +430,7 @@ const Profile = () => {
                     type="button"
                     key={interest}
                     onClick={() => handleCycleNodeLevel(interest)}
-                    className={`px-3 py-2 border-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-full flex items-center gap-1.5 select-none ${
+                    className={`px-3 py-2 border-2 text-compact font-black uppercase tracking-wider transition-all rounded-full flex items-center gap-1.5 select-none ${
                       activeLevel === 'Beginner' ? 'bg-info-subtle border-info text-info-strong' :
                       activeLevel === 'Intermediate' ? 'bg-plum-subtle border-plum text-plum-strong' :
                       activeLevel === 'Pro' ? 'bg-success-subtle border-success text-success-strong ring-2 ring-success/10' :
@@ -443,7 +439,7 @@ const Profile = () => {
                   >
                     {interest}
                     {activeLevel && (
-                      <span className="text-[8px] uppercase px-1 py-0.5 rounded bg-card border font-black">
+                      <span className="text-caption uppercase px-1 py-0.5 rounded bg-card border font-black">
                         {activeLevel}
                       </span>
                     )}
@@ -454,7 +450,7 @@ const Profile = () => {
 
             {Object.keys(graphData).filter(i => !systemAvailableInterests.includes(i)).length > 0 && (
               <div className="pt-2 border-t border-muted">
-                <p className="text-[9px] font-black uppercase tracking-widest text-subtle mb-2">Custom Sub-Nodes</p>
+                <p className="text-label font-black uppercase tracking-widest text-subtle mb-2">Custom Sub-Nodes</p>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(graphData)
                     .filter(([tech]) => !systemAvailableInterests.includes(tech))
@@ -463,7 +459,7 @@ const Profile = () => {
                         type="button"
                         key={customNode}
                         onClick={() => handleCycleNodeLevel(customNode)}
-                        className={`px-3 py-1.5 border-2 text-[10px] font-black uppercase rounded-full flex items-center gap-2 transition-all ${
+                        className={`px-3 py-1.5 border-2 text-compact font-black uppercase rounded-full flex items-center gap-2 transition-all ${
                           activeLevel === 'Beginner' ? 'bg-info-subtle/70 border-info-soft text-info-strong' :
                           activeLevel === 'Intermediate' ? 'bg-plum-subtle/70 border-plum-soft text-plum-strong' :
                           activeLevel === 'Pro' ? 'bg-success-subtle/70 border-success text-success-strong' :
@@ -471,7 +467,7 @@ const Profile = () => {
                         }`}
                       >
                         {customNode}
-                        <span className="text-[8px] uppercase px-1 bg-card border font-black">
+                        <span className="text-caption uppercase px-1 bg-card border font-black">
                           {activeLevel || "REMOVE"}
                         </span>
                       </button>
@@ -542,7 +538,7 @@ const Profile = () => {
             placeholder="CONFIRM_PASSWORD"
             className="w-full border-2 border-danger bg-card p-3 text-sm font-bold outline-none"
           />
-          {purgeError && <p className="text-[10px] font-black uppercase text-danger">{purgeError}</p>}
+          {purgeError && <p className="text-compact font-black uppercase text-danger">{purgeError}</p>}
           <button onClick={handleFinalPurge} disabled={purging} className="w-full bg-danger text-primary-foreground py-4 font-black uppercase tracking-widest hover:bg-danger-strong transition-colors text-xs disabled:opacity-60">{purging ? 'Purging...' : 'Confirm_Purge'}</button>
         </div>
       </SecurityModal>
@@ -553,7 +549,7 @@ const Profile = () => {
 const DirectiveBtn = ({ icon, label, onClick, danger }) => (
   <button 
     onClick={onClick}
-    className={`flex items-center justify-between px-5 py-4 border transition-all font-black text-[10px] uppercase tracking-widest w-full
+    className={`flex items-center justify-between px-5 py-4 border transition-all font-black text-compact uppercase tracking-widest w-full
       ${danger ? 'border-danger-soft text-danger hover:bg-danger hover:text-primary-foreground' : 'border-muted bg-surface/50 text-foreground hover:border-primary'}`}
   >
     <span className="flex items-center gap-3 italic">{icon} {label}</span>

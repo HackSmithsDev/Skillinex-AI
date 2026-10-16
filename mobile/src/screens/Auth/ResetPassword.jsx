@@ -52,7 +52,7 @@ export default function ResetPassword({ navigation, route }) {
         {/* 1. TOP NAVIGATION */}
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
-          className="mb-10 w-12 h-12 border-2 border-primary items-center justify-center bg-card shadow-[2px_2px_0px_0px_rgb(var(--primary))]"
+          className="mb-10 w-12 h-12 border-2 border-primary items-center justify-center bg-card shadow-offset-primary-sm"
         >
           <ChevronLeft size={24} strokeWidth={3} className="text-primary" />
         </TouchableOpacity>
@@ -63,13 +63,13 @@ export default function ResetPassword({ navigation, route }) {
             {/* FIXED: text-primary -> text-primary-foreground */}
             <ShieldCheck size={40} className="text-primary-foreground" />
             <View className="bg-primary/10 px-2 py-1 border border-primary/30">
-              <Text className="text-[8px] font-black text-success uppercase tracking-widest">Auth_Level: 04</Text>
+              <Text className="text-caption font-black text-success uppercase tracking-widest">Auth_Level: 04</Text>
             </View>
           </View>
-          <Text className="text-5xl font-black uppercase italic tracking-tighter text-primary-foreground mt-6 leading-[0.85]">
+          <Text className="text-5xl font-black uppercase italic tracking-tighter text-primary-foreground mt-6 leading-heading">
             SECURE{'\n'}RESET
           </Text>
-          <Text className="text-[10px] font-black uppercase tracking-[2px] text-success mt-4">
+          <Text className="text-compact font-black uppercase tracking-wide text-success mt-4">
             Task: Alpha_Key_Overwrite
           </Text>
         </View>
@@ -78,7 +78,7 @@ export default function ResetPassword({ navigation, route }) {
         <View className="space-y-8">
           {/* New Password */}
           <View className="mb-6">
-            <Text className="text-[8px] font-black text-subtle uppercase tracking-[2px] mb-2 ml-1">New_Access_Key</Text>
+            <Text className="text-caption font-black text-subtle uppercase tracking-wide mb-2 ml-1">New_Access_Key</Text>
             <View className="relative">
               <View className="absolute left-4 top-5 z-10">
                 <Lock size={18} className="text-subtle" />
@@ -88,7 +88,7 @@ export default function ResetPassword({ navigation, route }) {
                 autoCapitalize="none"
                 placeholder="Enter new password"
                 placeholderClassName="text-line-strong"
-                className="bg-card border-2 border-primary h-16 pl-12 pr-12 font-bold text-foreground text-sm shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+                className="bg-card border-2 border-primary h-16 pl-12 pr-12 font-bold text-foreground text-sm shadow-offset-primary"
                 onChangeText={(val) => setFormData({...formData, password: val})}
               />
               <TouchableOpacity 
@@ -102,7 +102,7 @@ export default function ResetPassword({ navigation, route }) {
 
           {/* Confirm Password */}
           <View className="mb-6">
-            <Text className="text-[8px] font-black text-subtle uppercase tracking-[2px] mb-2 ml-1">Confirm_Overwrite</Text>
+            <Text className="text-caption font-black text-subtle uppercase tracking-wide mb-2 ml-1">Confirm_Overwrite</Text>
             <View className="relative">
               <View className="absolute left-4 top-5 z-10">
                 <Lock size={18} className="text-subtle" />
@@ -112,7 +112,7 @@ export default function ResetPassword({ navigation, route }) {
                 autoCapitalize="none"
                 placeholder="Verify new password"
                 placeholderClassName="text-line-strong"
-                className="bg-card border-2 border-primary h-16 pl-12 pr-4 font-bold text-foreground text-sm shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+                className="bg-card border-2 border-primary h-16 pl-12 pr-4 font-bold text-foreground text-sm shadow-offset-primary"
                 onChangeText={(val) => setFormData({...formData, confirm: val})}
               />
             </View>
@@ -122,7 +122,7 @@ export default function ResetPassword({ navigation, route }) {
           {error && (
             <View className="flex-row items-center bg-danger-subtle p-4 border-2 border-danger mb-4">
               <AlertCircle size={16} strokeWidth={3} className="text-danger" />
-              <Text className="ml-3 text-danger font-black text-[10px] uppercase tracking-widest flex-1">{error}</Text>
+              <Text className="ml-3 text-danger font-black text-compact uppercase tracking-widest flex-1">{error}</Text>
             </View>
           )}
 
@@ -133,7 +133,7 @@ export default function ResetPassword({ navigation, route }) {
             className="bg-primary h-20 mt-4 items-center justify-center border-b-8 border-primary shadow-2xl"
           >
             {loading ? (
-              <ActivityIndicator color={colors['primary-foreground'] || '#FAFAFA'} />
+              <ActivityIndicator color={colors['primary-foreground']} />
             ) : (
               <Text className="text-primary-foreground font-black uppercase italic tracking-widest text-lg">
                 Update_Protocol
@@ -143,7 +143,7 @@ export default function ResetPassword({ navigation, route }) {
         </View>
 
         <View className="mt-12 items-center">
-          <Text className="text-[8px] font-black text-line-strong uppercase tracking-widest">
+          <Text className="text-caption font-black text-line-strong uppercase tracking-widest">
             System_Encryption_Active_AES256
           </Text>
         </View>

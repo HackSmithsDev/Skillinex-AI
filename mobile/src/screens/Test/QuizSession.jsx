@@ -28,10 +28,13 @@ export default function QuizSession({ navigation, route }) {
   const progressWidth = totalQuestions ? (currentStep / totalQuestions) * 100 : 0;
   const q = questions[currentIndex];
   const options = q ? [q.option1, q.option2, q.option3, q.option4].filter(Boolean) : [];
-  const selectedOption = answers[currentIndex] !== undefined ? options.indexOf(answers[currentIndex]) : null;
-  const hasSelection = selectedOption !== null && selectedOption >= 0;
+  const selectedOption = answers[currentIndex]
+    ? Number(answers[currentIndex].replace('option', '')) - 1
+    : null;
+  const hasSelection = selectedOption !== null && selectedOption >= 0 && selectedOption < options.length;
 
-  const setSelectedOption = (i) => setAnswers((prev) => ({ ...prev, [currentIndex]: options[i] }));
+  const setSelectedOption = (i) =>
+    setAnswers((prev) => ({ ...prev, [currentIndex]: `option${i + 1}` }));
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -46,7 +49,7 @@ export default function QuizSession({ navigation, route }) {
       });
       navigation.replace('TestResult', {
         result, score, hits: `${correct}/${questions.length}`, xp: score * 2,
-        questions, answers, courseId: meta.node_name,
+        questions, answers, courseId: meta.node_name, depth: testData?.depth || 'Intermediate',
       });
     } catch (e) {
       Alert.alert('Sync failed', errorMessage(e));
@@ -64,7 +67,16 @@ export default function QuizSession({ navigation, route }) {
   if (!q) {
     return (
       <SafeAreaView className="flex-1 bg-card items-center justify-center">
-        <ActivityIndicator color={colors.primary} />
+        {loading ? (
+          <ActivityIndicator color={colors.primary} />
+        ) : (
+          <>
+            <Text className="mb-4 text-center text-foreground">No questions are available for this assessment.</Text>
+            <TouchableOpacity onPress={() => navigation.goBack()} className="rounded-xl bg-primary px-6 py-3">
+              <Text className="font-bold text-primary-foreground">Return</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </SafeAreaView>
     );
   }
@@ -77,19 +89,19 @@ export default function QuizSession({ navigation, route }) {
           <View>
             <View className="flex-row items-center mb-1">
               <ShieldCheck size={12} strokeWidth={3} className="text-primary" />
-              <Text className="ml-2 text-[10px] font-black text-primary uppercase tracking-[0.3em]">Neural_Sync_Active</Text>
+              <Text className="ml-2 text-compact font-black text-primary uppercase tracking-wide-em">Neural_Sync_Active</Text>
             </View>
             <Text className="text-4xl font-black text-foreground italic uppercase tracking-tighter">Assessment</Text>
           </View>
           <View className="bg-primary px-4 py-2 border-b-4 border-primary">
-            <Text className="text-[12px] font-black text-primary-foreground italic">
+            <Text className="text-xs font-black text-primary-foreground italic">
               {currentStep.toString().padStart(2, '0')} / {totalQuestions.toString().padStart(2, '0')}
             </Text>
           </View>
         </View>
         
         {/* Progress Track - Hardware Style */}
-        <View className="h-4 bg-muted w-full border-2 border-primary p-[2px]">
+        <View className="h-4 bg-muted w-full border-2 border-primary p-0.5">
           <View 
             style={{ width: `${progressWidth}%` }}
             className="h-full bg-primary"
@@ -102,7 +114,7 @@ export default function QuizSession({ navigation, route }) {
         <View className="py-12">
           <View className="flex-row items-start mb-10">
             {/* FIXED: Zap icon text-primary -> text-primary-foreground */}
-            <View className="bg-primary p-2 mt-1 shadow-[3px_3px_0px_0px_rgb(var(--success))]">
+            <View className="bg-primary p-2 mt-1 shadow-offset-success-sm">
                 <Zap size={20} strokeWidth={3} className="text-primary-foreground" />
             </View>
             <Text className="ml-5 text-2xl font-black text-foreground leading-tight uppercase italic tracking-tighter flex-1">
@@ -119,7 +131,7 @@ export default function QuizSession({ navigation, route }) {
                 onPress={() => setSelectedOption(i)}
                 className={`flex-row items-center p-6 border-2 transition-all ${
                   selectedOption === i 
-                  ? 'border-primary bg-primary shadow-[4px_4px_0px_0px_rgb(var(--success))]' 
+                  ? 'border-primary bg-primary shadow-offset-success'
                   : 'border-muted bg-card'
                 }`}
               >
@@ -145,7 +157,7 @@ export default function QuizSession({ navigation, route }) {
       <View className="p-8 border-t-4 border-primary bg-surface">
         <View className="flex-row items-center mb-6">
           <Info size={14} className={hasSelection ? "text-primary" : "text-subtle"} />
-          <Text className={`ml-3 text-[9px] font-black uppercase tracking-widest ${
+          <Text className={`ml-3 text-label font-black uppercase tracking-widest ${
              hasSelection ? 'text-foreground' : 'text-subtle'
           }`}>
             {hasSelection ? "Parameter_Selected: Confirm_Submission" : "Select_Node_to_Proceed"}
@@ -165,7 +177,7 @@ export default function QuizSession({ navigation, route }) {
             <ActivityIndicator color={colors['primary-foreground']} />
           ) : (
             <>
-              <Text className={`text-sm font-black uppercase tracking-[0.4em] italic ${
+              <Text className={`text-sm font-black uppercase tracking-expanded-em italic ${
                 hasSelection ? 'text-primary-foreground' : 'text-subtle'
               }`}>
                 {currentStep === totalQuestions ? "Finalize_Sync" : "Next_Node"}

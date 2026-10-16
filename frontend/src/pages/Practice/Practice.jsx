@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ const defaultCompilerOptions = [
   { id: "cpp", label: "C++", course: "Systems Programming" },
   { id: "csharp", label: "C#", course: ".NET / Backend" },
   { id: "go", label: "Go", course: "Cloud / DevOps" },
-  { id: "bash", label: "Bash / Shell", course: "DevOps / Linux" },
+  { id: "sql", label: "SQL (SQLite)", course: "Databases" },
 ];
 
 export default function Practice() {
@@ -25,6 +25,8 @@ export default function Practice() {
   const [output, setOutput] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [loadingTask, setLoadingTask] = useState(true);
+  const [taskSyncStatus, setTaskSyncStatus] = useState("");
+  const taskPollRef = useRef(null);
 
   // Map backend language ID to Monaco Editor syntax highlighting
   const getMonacoLanguage = (lang) => {
@@ -47,22 +49,35 @@ export default function Practice() {
         api.get("/study/practice/active-task"),
       ]);
 
-      if (langRes.status === "fulfilled" && Array.isArray(langRes.value.data) && langRes.value.data.length > 0) {
-        const mapped = langRes.value.data.map((item) => ({
+      const languageOptions = langRes.status === "fulfilled" && Array.isArray(langRes.value.data)
+        ? langRes.value.data.map((item) => ({
           id: item.id,
           label: item.display_name || item.id,
           course: item.origin || "Skillinex Node",
-        }));
-        setCompilerOptions(mapped);
+        }))
+        : [];
+
+      if (langRes.status === "fulfilled" && Array.isArray(langRes.value.data) && langRes.value.data.length > 0) {
+        setCompilerOptions(languageOptions);
       }
 
       if (taskRes.status === "fulfilled" && taskRes.value.data) {
         const t = taskRes.value.data;
+        if (!languageOptions.some((option) => option.id === t.language)) {
+          setCompilerOptions((previous) => [
+            ...previous.filter((option) => option.id !== t.language),
+            { id: t.language, label: t.language.toUpperCase(), course: "Active Lab Runtime" },
+          ]);
+        }
         setTask(t);
         setLanguage(t.language || "python");
         setCode(t.starter_code || "");
+        setTaskSyncStatus(t.is_bootstrap
+          ? "Challenge generation is still in progress."
+          : t.generation_error ? "AI generation is unavailable. A fallback challenge is ready." : "");
       } else {
         setCode("# Implement your solution here\ndef solve():\n    return 1\n");
+        setTaskSyncStatus("Challenge unavailable. Refresh to retry.");
       }
     } catch (error) {
       console.warn("Lab environment initialization error:", error);
@@ -70,6 +85,41 @@ export default function Practice() {
       setLoadingTask(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!task?.is_bootstrap) return undefined;
+
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const response = await api.get("/study/practice/active-task", { params: { topic: task.topic } });
+        const nextTask = response.data;
+        if (cancelled) return;
+        if (nextTask && !nextTask.is_bootstrap) {
+          setTask(nextTask);
+          setLanguage(nextTask.language || "python");
+          setCode(nextTask.starter_code || "");
+          setCompilerOptions((previous) => previous.some((option) => option.id === nextTask.language)
+            ? previous
+            : [...previous, { id: nextTask.language, label: nextTask.language.toUpperCase(), course: "Active Lab Runtime" }]);
+          setTaskSyncStatus(nextTask.generation_error
+            ? "AI generation is unavailable. A fallback challenge is ready."
+            : "");
+          return;
+        }
+        setTaskSyncStatus("Challenge generation is still in progress.");
+      } catch {
+        if (!cancelled) setTaskSyncStatus("Challenge sync failed. Retrying...");
+      }
+      if (!cancelled) taskPollRef.current = setTimeout(poll, 5000);
+    };
+
+    taskPollRef.current = setTimeout(poll, 5000);
+    return () => {
+      cancelled = true;
+      if (taskPollRef.current) clearTimeout(taskPollRef.current);
+    };
+  }, [task]);
 
   useEffect(() => {
     loadEnvironment();
@@ -99,7 +149,7 @@ export default function Practice() {
 
       const stdout = data?.run?.stdout || "";
       const stderr = data?.run?.stderr || "";
-      const isPassed = data?.run?.passed || stdout.trim() === "1" || stdout.trim().includes("SUCCESS");
+      const isPassed = data?.run?.passed === true;
 
       if (stdout) {
         log(stdout.trim(), "success");
@@ -112,6 +162,10 @@ export default function Practice() {
       if (isPassed) {
         log("Verification Check Passed! Syncing XP...", "system");
         await syncLabSuccess();
+      } else if (task && language !== task.language) {
+        log(`Run completed, but challenge verification requires ${task.language}. No XP awarded.`, "system");
+      } else if (task) {
+        log("Challenge checks failed. Review the output and try again.", "error");
       } else if (!stdout && !stderr) {
         log("Execution completed with status 0 (no output).", "system");
       }
@@ -141,7 +195,14 @@ export default function Practice() {
         ]);
       }
     } catch (err) {
-      console.error("Failed to sync XP", err);
+      setOutput((previous) => [
+        ...previous,
+        {
+          msg: err.response?.data?.detail || "Lab passed, but XP could not be synchronized.",
+          type: "error",
+          time: new Date().toLocaleTimeString(),
+        },
+      ]);
     }
   };
 
@@ -154,7 +215,7 @@ export default function Practice() {
             <Cpu size={22} strokeWidth={2.5} />
           </div>
           <div>
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-subtle mb-0.5">
+            <h2 className="text-compact font-black uppercase tracking-expanded text-subtle mb-0.5">
               Lab_v2.4 // {task?.topic ? task.topic.toUpperCase() : "ACTIVE_NODE"}
             </h2>
             <p className="text-xl font-black text-foreground uppercase tracking-tighter italic">Skillinex Terminal</p>
@@ -163,7 +224,7 @@ export default function Practice() {
 
         <div className="flex items-center gap-3">
           <Select value={language} onValueChange={handleLanguageChange}>
-            <SelectTrigger className="w-[220px] bg-primary text-primary-foreground border-none font-black text-[10px] uppercase tracking-widest h-11 rounded-none">
+            <SelectTrigger className="w-language-picker bg-primary text-primary-foreground border-none font-black text-compact uppercase tracking-widest h-11 rounded-none">
               <SelectValue placeholder="Select Engine" />
             </SelectTrigger>
             <SelectContent className="bg-primary text-primary-foreground rounded-none border-none">
@@ -177,7 +238,7 @@ export default function Practice() {
 
           <Button
             onClick={runCode}
-            disabled={isRunning || loadingTask}
+            disabled={isRunning || loadingTask || task?.is_bootstrap}
             className="bg-success text-inverse font-black uppercase tracking-widest rounded-none h-11 px-8 hover:bg-success"
           >
             {isRunning ? <Loader2 className="animate-spin" size={16} /> : <Play size={14} className="mr-2" />}
@@ -187,7 +248,7 @@ export default function Practice() {
       </header>
 
       {/* 2. DYNAMIC WORKSPACE MATRIX */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[75vh]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-lab-workspace">
         
         {/* Dynamic Task Briefing */}
         <aside className="lg:col-span-3 space-y-4">
@@ -195,7 +256,7 @@ export default function Practice() {
             <CardContent className="p-6 flex flex-col justify-between h-full">
               <div>
                 <div className="flex justify-between items-center mb-4">
-                  <Badge className="bg-primary text-primary-foreground rounded-none text-[9px] font-black uppercase">
+                  <Badge className="bg-primary text-primary-foreground rounded-none text-label font-black uppercase">
                     {task?.difficulty || "Intermediate"}
                   </Badge>
                   <button 
@@ -210,6 +271,11 @@ export default function Practice() {
                 <h3 className="text-lg font-black italic uppercase mb-2">
                   {task?.title || "Operational Task"}
                 </h3>
+                {taskSyncStatus && (
+                  <p role="status" className="text-xs font-bold text-warning-strong mb-4">
+                    {taskSyncStatus}
+                  </p>
+                )}
                 
                 <p className="text-xs text-muted-foreground leading-relaxed mb-6 whitespace-pre-line">
                   {task?.description || "Implement the solution in the editor satisfying all assertion checks."}
@@ -217,13 +283,13 @@ export default function Practice() {
 
                 {task?.target_criteria && (
                   <div className="bg-surface border border-border p-3 mb-4">
-                    <p className="text-[9px] font-black uppercase text-subtle mb-1">Target Criteria</p>
-                    <p className="text-[11px] font-mono text-foreground">{task.target_criteria}</p>
+                    <p className="text-label font-black uppercase text-subtle mb-1">Target Criteria</p>
+                    <p className="text-detail font-mono text-foreground">{task.target_criteria}</p>
                   </div>
                 )}
               </div>
 
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground border-t border-muted pt-4">
+              <div className="text-compact uppercase tracking-widest text-muted-foreground border-t border-muted pt-4">
                 Active Runtime: <span className="text-foreground font-black uppercase">{language}</span>
               </div>
             </CardContent>
@@ -233,7 +299,7 @@ export default function Practice() {
         {/* Editor & Console Output */}
         <main className="lg:col-span-9 flex flex-col gap-4">
           <div className="flex-1 border-2 border-primary overflow-hidden relative">
-            <div className="absolute top-0 right-0 z-10 bg-primary text-primary-foreground px-4 py-1 text-[8px] font-black uppercase tracking-widest">
+            <div className="absolute top-0 right-0 z-10 bg-primary text-primary-foreground px-4 py-1 text-caption font-black uppercase tracking-widest">
               workspace/{language === "python" ? "main.py" : language === "javascript" ? "index.js" : `main.${language}`}
             </div>
             <Editor
@@ -248,21 +314,22 @@ export default function Practice() {
                 fontFamily: "JetBrains Mono, monospace",
                 padding: { top: 20 },
                 scrollBeyondLastLine: false,
+                readOnly: Boolean(task?.is_bootstrap),
               }}
             />
           </div>
 
           <div className="h-48 bg-inverse border-2 border-primary flex flex-col">
             <div className="px-4 py-2 border-b border-card/10 flex justify-between">
-              <span className="text-[9px] font-black text-primary-foreground/40 uppercase tracking-widest">Console_Output</span>
+              <span className="text-label font-black text-primary-foreground/40 uppercase tracking-widest">Console_Output</span>
               <button 
                 onClick={() => setOutput([])} 
-                className="text-[8px] text-primary-foreground/20 hover:text-primary-foreground uppercase font-black"
+                className="text-caption text-primary-foreground/20 hover:text-primary-foreground uppercase font-black"
               >
                 Clear
               </button>
             </div>
-            <div className="flex-1 p-4 font-mono text-[11px] overflow-y-auto space-y-1">
+            <div className="flex-1 p-4 font-mono text-detail overflow-y-auto space-y-1">
               {output.map((line, i) => (
                 <div key={i} className="flex gap-4">
                   <span className="text-primary-foreground/20">[{line.time}]</span>

@@ -51,7 +51,7 @@ const Login = () => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-card rounded-[2.5rem] shadow-2xl shadow-border/50 p-10 border border-muted"
+        className="max-w-md w-full bg-card rounded-dialog shadow-2xl shadow-border/50 p-10 border border-muted"
       >
         <h2 className="text-3xl font-bold text-center text-foreground tracking-tight">Welcome Back</h2>
         <p className="text-muted-foreground text-center mt-2">Log in to continue your journey</p>

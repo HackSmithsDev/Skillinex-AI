@@ -45,12 +45,12 @@ const Landing = () => {
         <motion.div 
           animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 8, repeat: Infinity }}
-          className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-info-subtle rounded-full blur-[120px]" 
+          className="absolute -top-page-inset -left-page-inset w-decoration-large h-decoration-large bg-info-subtle rounded-full blur-glow-lg"
         />
         <motion.div 
           animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
           transition={{ duration: 10, repeat: Infinity, delay: 1 }}
-          className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] bg-brand-subtle rounded-full blur-[100px]" 
+          className="absolute top-page-upper -right-page-inset w-decoration-small h-decoration-small bg-brand-subtle rounded-full blur-glow-md"
         />
       </div>
 
@@ -71,7 +71,7 @@ const Landing = () => {
           {/* Gesture 2: The Headline Blast */}
           <motion.h1 
             variants={itemVariants}
-            className="text-6xl md:text-8xl font-black text-foreground tracking-tighter leading-[0.9]"
+            className="text-6xl md:text-8xl font-black text-foreground tracking-tighter leading-compact"
           >
             THE FUTURE OF <br />
             <span className="text-primary bg-gradient-to-r from-info via-brand to-info bg-clip-text text-transparent">
@@ -142,7 +142,7 @@ const Landing = () => {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.2 }}
               >
-                <Card className="group border-none shadow-none bg-card p-4 rounded-[2rem] hover:shadow-xl hover:shadow-info-soft/50 transition-all duration-500">
+                <Card className="group border-none shadow-none bg-card p-4 rounded-panel hover:shadow-xl hover:shadow-info-soft/50 transition-all duration-500">
                   <CardContent className="p-8 space-y-6">
                     <div className="w-16 h-16 rounded-2xl bg-info-subtle flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                       {feature.icon}

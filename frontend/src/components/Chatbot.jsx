@@ -66,13 +66,13 @@ export default function Chatbot({ isOpen, onClose, lectureTitle }) {
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-primary/40 backdrop-blur-md z-[60]"
+            className="fixed inset-0 bg-primary/40 backdrop-blur-md z-modal"
           />
           
           <motion.div 
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 h-full w-full max-w-lg bg-card shadow-[-20px_0_50px_var(--shadow-ink)] z-[61] flex flex-col border-l-4 border-primary"
+            className="fixed right-0 top-0 h-full w-full max-w-lg bg-card shadow-side-panel z-toast flex flex-col border-l-4 border-primary"
           >
             {/* Header */}
             <div className="p-8 border-b-2 border-muted flex justify-between items-center bg-card">
@@ -81,10 +81,10 @@ export default function Chatbot({ isOpen, onClose, lectureTitle }) {
                   <Bot size={24} />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm uppercase tracking-[0.2em] text-foreground">CogniLit AI</h3>
+                  <h3 className="font-black text-sm uppercase tracking-editorial text-foreground">CogniLit AI</h3>
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 bg-success rounded-full animate-pulse" />
-                    <p className="text-[9px] text-subtle font-black uppercase tracking-widest">Neural_Link_Active</p>
+                    <p className="text-label text-subtle font-black uppercase tracking-widest">Neural_Link_Active</p>
                   </div>
                 </div>
               </div>
@@ -101,13 +101,13 @@ export default function Chatbot({ isOpen, onClose, lectureTitle }) {
               {messages.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-6 opacity-20 grayscale">
                   <Sparkles size={60} />
-                  <p className="text-[10px] font-black uppercase tracking-[0.5em] max-w-[200px]">Awaiting Neural Transmission</p>
+                  <p className="text-compact font-black uppercase tracking-display max-w-message-preview">Awaiting Neural Transmission</p>
                 </div>
               )}
 
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[90%] p-6 rounded-[2rem] text-sm leading-relaxed ${
+                  <div className={`max-w-content-narrow p-6 rounded-panel text-sm leading-relaxed ${
                     msg.role === 'user' 
                     ? 'bg-primary text-primary-foreground rounded-tr-none font-bold' 
                     : 'bg-card border-2 border-muted shadow-xl shadow-border/50 rounded-tl-none prose prose-slate italic font-medium'
@@ -119,7 +119,7 @@ export default function Chatbot({ isOpen, onClose, lectureTitle }) {
               
               {loading && (
                 <div className="flex justify-start">
-                  <div className="bg-surface p-6 rounded-[2rem] rounded-tl-none border-2 border-muted animate-pulse">
+                  <div className="bg-surface p-6 rounded-panel rounded-tl-none border-2 border-muted animate-pulse">
                     <Loader2 className="animate-spin text-subtle" size={20} />
                   </div>
                 </div>
@@ -144,7 +144,7 @@ export default function Chatbot({ isOpen, onClose, lectureTitle }) {
                   <Send size={18} />
                 </button>
               </div>
-              <p className="mt-4 text-[8px] font-black text-line-strong uppercase tracking-widest text-center">
+              <p className="mt-4 text-caption font-black text-line-strong uppercase tracking-widest text-center">
                 CogniLit Research Mentor // v1.0.4-Stable
               </p>
             </form>

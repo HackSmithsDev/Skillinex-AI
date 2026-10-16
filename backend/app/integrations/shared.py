@@ -6,7 +6,6 @@ class PistonLanguageEnum(str, Enum):
     PYTHON = "python"
     JAVASCRIPT = "javascript"
     CPP = "cpp"
-    KOTLIN = "kotlin"
     JAVA = "java"
     GO = "go"
     CSHARP = "csharp"
@@ -23,7 +22,6 @@ COURSE_COMPILER_OPTIONS = [
     {"id": "cpp", "label": "C++", "course": "Competitive Programming / Systems"},
     {"id": "csharp", "label": "C#", "course": ".NET / Unity / Backend"},
     {"id": "go", "label": "Go", "course": "Cloud / APIs / DevOps"},
-    {"id": "kotlin", "label": "Kotlin", "course": "Android / JVM"},
     {"id": "php", "label": "PHP", "course": "Legacy Web / Backend"},
     {"id": "swift", "label": "Swift", "course": "iOS / Apple"},
     {"id": "sql", "label": "SQL", "course": "Databases"},
@@ -36,7 +34,6 @@ LANGUAGE_KEYWORDS = {
     "cpp": ["cpp", "c++", "competitive programming", "system", "dsa", "algorithm"],
     "csharp": ["c#", ".net", "dotnet", "unity"],
     "go": ["go", "golang", "cloud", "microservice", "api"],
-    "kotlin": ["kotlin", "android", "jvm"],
     "php": ["php", "laravel", "web backend"],
     "swift": ["swift", "ios", "apple"],
     "sql": ["sql", "database", "postgres", "mysql"],
@@ -64,9 +61,11 @@ WANDBOX_COMPILERS = {
     "c": "gcc-13.2.0",
     "csharp": "dotnetcore-8.0.402",
     "go": "go-1.23.2",
-    "kotlin": "openjdk-jdk-21+35",  # Wandbox has no Kotlin runtime; falls back to JVM
     "php": "php-8.3.12",
     "swift": "swift-6.0.1",
+    "sql": "sqlite-3.46.1",
+    "postgres": "sqlite-3.46.1",
+    "sqlite3": "sqlite-3.46.1",
 }
 
 

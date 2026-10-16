@@ -47,10 +47,10 @@ export default function Login({ navigation }) {
         
         {/* BRANDING HEADER */}
         <View className="mb-12">
-          <Text className="text-5xl font-black uppercase italic tracking-[-2px] text-foreground leading-[0.9]">
+          <Text className="text-5xl font-black uppercase italic tracking-tight-hero text-foreground leading-compact">
             System{'\n'}<Text className="text-primary">Access</Text>
           </Text>
-          <Text className="text-[10px] font-black uppercase tracking-[3px] text-subtle mt-4">
+          <Text className="text-compact font-black uppercase tracking-expanded text-subtle mt-4">
             Initialize_Secure_Session_v2.4
           </Text>
         </View>
@@ -58,7 +58,7 @@ export default function Login({ navigation }) {
         {/* ERROR BOX */}
         {error ? (
           <View className="bg-danger-subtle p-4 border-2 border-danger mb-6">
-            <Text className="text-danger font-black uppercase text-[10px] text-center italic">
+            <Text className="text-danger font-black uppercase text-compact text-center italic">
               Error: {error}
             </Text>
           </View>
@@ -74,7 +74,7 @@ export default function Login({ navigation }) {
             <TextInput
               placeholder="Email Address"
               placeholderClassName="text-subtle"
-              className="bg-surface border-2 border-primary h-16 pl-12 pr-4 font-black text-foreground italic text-xs shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+              className="bg-surface border-2 border-primary h-16 pl-12 pr-4 font-black text-foreground italic text-xs shadow-offset-primary"
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -93,7 +93,7 @@ export default function Login({ navigation }) {
               placeholder="User Password"
               placeholderClassName="text-subtle"
               secureTextEntry={!showPassword}
-              className="bg-surface border-2 border-primary h-16 pl-12 pr-12 font-black text-foreground italic text-xs shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+              className="bg-surface border-2 border-primary h-16 pl-12 pr-12 font-black text-foreground italic text-xs shadow-offset-primary"
               autoCapitalize="none"
               onChangeText={(val) => setFormData({...formData, password: val})}
               value={formData.password}
@@ -111,7 +111,7 @@ export default function Login({ navigation }) {
             onPress={() => navigation.navigate('ForgotPassword')}
             className="self-end mb-8"
           >
-            <Text className="text-[10px] font-black uppercase text-primary italic">Forgot_Password?</Text>
+            <Text className="text-compact font-black uppercase text-primary italic">Forgot_Password?</Text>
           </TouchableOpacity>
 
           {/* Submit Button */}
@@ -123,10 +123,10 @@ export default function Login({ navigation }) {
               ${loading ? 'opacity-70' : 'opacity-100'}`}
           >
             {loading ? (
-              <ActivityIndicator color={colors['primary-foreground'] || '#FAFAFA'} />
+              <ActivityIndicator color={colors['primary-foreground']} />
             ) : (
               <>
-                <Text className="text-primary-foreground font-black uppercase italic text-lg tracking-[-1px] mr-2">
+                <Text className="text-primary-foreground font-black uppercase italic text-lg tracking-tight-display mr-2">
                   Execute Login
                 </Text>
                 <ChevronRight size={20} className="text-primary-foreground" />
@@ -137,7 +137,7 @@ export default function Login({ navigation }) {
 
         {/* FOOTER */}
         <View className="mt-12 mb-10 items-center">
-          <Text className="text-[10px] font-black uppercase text-subtle">
+          <Text className="text-compact font-black uppercase text-subtle">
             No Authorization Node?
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Signup')} className="mt-2">

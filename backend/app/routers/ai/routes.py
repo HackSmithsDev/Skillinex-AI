@@ -32,8 +32,12 @@ async def create_session(
     )
     db.add(new_session)
     await db.commit()
-    await db.refresh(new_session)
-    return new_session
+    result = await db.execute(
+        select(ChatSession)
+        .where(ChatSession.id == new_session.id)
+        .options(selectinload(ChatSession.messages))
+    )
+    return result.scalars().one()
 
 @router.get("/sessions", response_model=List[ChatSessionOut])
 async def get_user_sessions(
@@ -44,6 +48,7 @@ async def get_user_sessions(
         select(ChatSession)
         .where(ChatSession.user_id == current_user.id)
         .order_by(ChatSession.created_at.desc())
+        .options(selectinload(ChatSession.messages))
     )
     return result.scalars().all()
 

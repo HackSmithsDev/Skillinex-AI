@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PlayCircle, BookOpen, Trophy, Zap, Clock, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import CreateRoadmapModal from "@/components/CreateRoadmapModal";
 
 // 🚀 Use your custom api axios instance to pass your JWT auth interceptors safely!
 import api from "@/api/axios"; 
@@ -12,8 +13,10 @@ const UserHome = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
+  const [roadmapModalOpen, setRoadmapModalOpen] = useState(false);
   const [userData, setUserData] = useState(null);
   const [activeCourse, setActiveCourse] = useState(null);
+  const [dashboardError, setDashboardError] = useState("");
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -22,8 +25,10 @@ const UserHome = () => {
         const res = await api.get("/user/dashboard"); // Adjusted prefix based on APIRouter mount
         setUserData(res.data.stats);
         setActiveCourse(res.data.currentCourse);
+        setDashboardError("");
       } catch (err) {
         console.error("Failed to load dashboard telemetry stream", err);
+        setDashboardError(err.response?.data?.detail || "Could not load your dashboard. Refresh to try again.");
       } finally {
         setLoading(false);
       }
@@ -63,6 +68,7 @@ const UserHome = () => {
           </Button>
         </div>
       </div>
+      {dashboardError && <p role="alert" className="rounded border border-danger-soft bg-danger-subtle p-4 text-sm font-semibold text-danger">{dashboardError}</p>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content: Current Course */}
@@ -72,7 +78,7 @@ const UserHome = () => {
               <div className="h-1 bg-primary w-full" />
               <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row">
-                  <div className="md:w-1/3 bg-muted relative overflow-hidden min-h-[200px]">
+                  <div className="md:w-1/3 bg-muted relative overflow-hidden min-h-card-visual">
                     <img 
                       src={activeCourse.thumbnail_url || "https://images.unsplash.com/photo-1677442136019-21780ecad995"} 
                       className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-500"
@@ -89,7 +95,7 @@ const UserHome = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between items-start gap-4">
                         <h3 className="text-xl font-bold text-foreground text-left tracking-tight leading-tight">{activeCourse.title}</h3>
-                        <span className="text-[10px] font-black text-foreground bg-muted px-2 py-1 rounded-none uppercase tracking-wider whitespace-nowrap">
+                        <span className="text-compact font-black text-foreground bg-muted px-2 py-1 rounded-none uppercase tracking-wider whitespace-nowrap">
                           {activeCourse.difficulty}
                         </span>
                       </div>
@@ -118,7 +124,7 @@ const UserHome = () => {
           ) : (
             <Card className="p-12 text-center border-dashed border-2 border-border rounded-none bg-card">
               <p className="text-sm font-bold uppercase text-subtle tracking-wider">No active courses. Time to generate one!</p>
-              <Button className="mt-4 rounded-none bg-primary text-primary-foreground hover:bg-primary-hover" onClick={() => navigate('/generate')}>Explore Topics</Button>
+              <Button className="mt-4 rounded-none bg-primary text-primary-foreground hover:bg-primary-hover" onClick={() => setRoadmapModalOpen(true)}>Explore Topics</Button>
             </Card>
           )}
 
@@ -128,7 +134,7 @@ const UserHome = () => {
               <CardContent className="p-5 flex items-center gap-4 text-left">
                 <div className="p-3 bg-muted text-primary-hover rounded-none"><Trophy size={20} /></div>
                 <div>
-                  <p className="text-[10px] font-black text-subtle uppercase tracking-widest">Top Category</p>
+                  <p className="text-compact font-black text-subtle uppercase tracking-widest">Top Category</p>
                   <p className="text-xl font-black italic tracking-tight text-foreground uppercase">{userData?.topCategory || "N/A"}</p>
                 </div>
               </CardContent>
@@ -137,7 +143,7 @@ const UserHome = () => {
               <CardContent className="p-5 flex items-center gap-4 text-left">
                 <div className="p-3 bg-highlight/10 text-highlight rounded-none"><Zap size={20} className="fill-highlight text-highlight" /></div>
                 <div>
-                  <p className="text-[10px] font-black text-subtle uppercase tracking-widest">Avg Score</p>
+                  <p className="text-compact font-black text-subtle uppercase tracking-widest">Avg Score</p>
                   <p className="text-xl font-black italic tracking-tight text-foreground">{userData?.avgScore || 0}%</p>
                 </div>
               </CardContent>
@@ -151,7 +157,7 @@ const UserHome = () => {
             <CardHeader className="border-b border-surface"><CardTitle className="text-xs font-black uppercase tracking-widest text-foreground text-left">Daily Goals</CardTitle></CardHeader>
             <CardContent className="space-y-2 pt-4">
               {userData?.goals?.map((goal, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-none border border-transparent hover:border-muted hover:bg-surface/50 transition-all cursor-pointer">
+                <div key={i} className="flex items-center gap-3 p-3 rounded-none border border-transparent hover:border-muted hover:bg-surface/50 transition-all">
                   <div className={`w-4 h-4 rounded-none border-2 flex items-center justify-center transition-colors ${goal.done ? 'bg-primary border-primary' : 'border-line-strong'}`}>
                     {goal.done && <div className="w-1.5 h-1.5 bg-card" />}
                   </div>
@@ -163,7 +169,7 @@ const UserHome = () => {
           
           <Button onClick={() => setGoalDialogOpen(true)} variant="ghost" className="w-full text-subtle bg-card border-2 border-dashed border-border hover:border-subtle rounded-none h-24 flex flex-col gap-1 transition-all">
             <span className="font-black uppercase tracking-wider text-xs text-soft">+ Add Custom Goal</span>
-            <span className="text-[9px] uppercase font-bold text-subtle tracking-widest">Tailor your roadmap</span>
+            <span className="text-label uppercase font-bold text-subtle tracking-widest">Tailor your roadmap</span>
           </Button>
         </div>
       </div>
@@ -185,6 +191,11 @@ const UserHome = () => {
           </div>
         </div>
       )}
+      <CreateRoadmapModal
+        isOpen={roadmapModalOpen}
+        onClose={() => setRoadmapModalOpen(false)}
+        onCreated={() => navigate('/learning-vault')}
+      />
     </div>
   );
 }

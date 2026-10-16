@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/api/axios";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -7,23 +7,25 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   Brain, Code, Database, Sparkles, 
-  ArrowRight, Clock, Star, Layout,
+  ArrowRight, Clock, Layout,
   CheckCircle2, Loader2, BookOpen
 } from "lucide-react";
 import { motion } from "framer-motion";
+import CreateRoadmapModal from "@/components/CreateRoadmapModal";
 
 export default function LearningVault() {
   const navigate = useNavigate();
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isRoadmapModalOpen, setIsRoadmapModalOpen] = useState(false);
   const pollIntervalRef = useRef(null);
 
-  const fetchVault = async (isBackground = false) => {
+  const fetchVault = useCallback(async (isBackground = false) => {
     // 1. Verify access token exists before firing
     const token = localStorage.getItem("token") || localStorage.getItem("access_token");
     if (!token) {
-      navigate("/auth/login");
+      navigate("/login");
       return;
     }
 
@@ -49,7 +51,7 @@ export default function LearningVault() {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
           localStorage.removeItem("access_token");
-          navigate("/auth/login");
+          navigate("/login");
         } else {
           setError("Failed to synchronize your vault archives.");
         }
@@ -59,7 +61,7 @@ export default function LearningVault() {
         setLoading(false);
       }
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchVault();
@@ -69,7 +71,7 @@ export default function LearningVault() {
         clearInterval(pollIntervalRef.current);
       }
     };
-  }, []);
+  }, [fetchVault]);
 
   // Icon resolver based on category
   const getCategoryIcon = (category) => {
@@ -104,7 +106,7 @@ export default function LearningVault() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/60 pb-8">
           <div className="space-y-2 text-left">
-            <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary">
+            <Badge variant="outline" className="text-compact font-black uppercase tracking-widest border-primary/20 text-primary">
               Personal Repository
             </Badge>
             <h1 className="text-4xl lg:text-5xl font-black text-foreground tracking-tight">
@@ -116,23 +118,33 @@ export default function LearningVault() {
           </div>
 
           <Button 
-            onClick={() => navigate("/tutorials")}
+            onClick={() => setIsRoadmapModalOpen(true)}
             className="rounded-2xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
           >
             <Sparkles size={18} className="mr-2" />
-            Explore Courses
+            Create a Roadmap
           </Button>
         </div>
 
         {error && (
-          <div className="p-4 rounded-2xl bg-danger-subtle border border-danger-soft text-danger text-sm font-semibold">
-            {error}
+          <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-danger-soft bg-danger-subtle p-4 text-sm font-semibold text-danger sm:flex-row sm:items-center sm:justify-between">
+            <span>{error}</span>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setLoading(true);
+                void fetchVault();
+              }}
+              className="shrink-0"
+            >
+              Retry
+            </Button>
           </div>
         )}
 
         {/* Empty State */}
         {!loading && enrolledCourses.length === 0 && (
-          <div className="text-center py-20 bg-card rounded-[2.5rem] border border-dashed border-border space-y-6">
+          <div className="text-center py-20 bg-card rounded-dialog border border-dashed border-border space-y-6">
             <div className="w-16 h-16 rounded-2xl bg-surface text-subtle flex items-center justify-center mx-auto">
               <BookOpen size={32} />
             </div>
@@ -143,10 +155,10 @@ export default function LearningVault() {
               </p>
             </div>
             <Button 
-              onClick={() => navigate("/tutorials")} 
+              onClick={() => setIsRoadmapModalOpen(true)}
               className="rounded-xl bg-primary text-primary-foreground hover:bg-primary-hover"
             >
-              Browse Tutorials
+              Create a Roadmap
             </Button>
           </div>
         )}
@@ -163,16 +175,16 @@ export default function LearningVault() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.08 }}
               >
-                <Card className={`group relative border-none bg-card rounded-[2.5rem] shadow-xl overflow-hidden transition-all duration-500 flex flex-col h-full border border-transparent ${course.is_ready ? 'hover:border-primary/20 hover:shadow-2xl' : 'opacity-85'}`}>
+                <Card className={`group relative border-none bg-card rounded-dialog shadow-xl overflow-hidden transition-all duration-500 flex flex-col h-full border border-transparent ${course.is_ready ? 'hover:border-primary/20 hover:shadow-2xl' : 'opacity-85'}`}>
                   
-                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${course.gradient || 'from-primary/20 to-info/20'} rounded-bl-[5rem] -z-0 opacity-50 transition-transform ${course.is_ready && 'group-hover:scale-110'}`} />
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${course.gradient || 'from-primary/20 to-info/20'} rounded-bl-landing-ornament -z-0 opacity-50 transition-transform ${course.is_ready && 'group-hover:scale-110'}`} />
                   
                   <CardContent className="p-8 space-y-6 relative z-10 flex-1">
                     <div className="flex justify-between items-start">
                       <div className="p-4 bg-card rounded-2xl shadow-sm border border-surface">
                         <CategoryIcon className={course.is_ready ? "text-primary" : "text-line-strong"} size={32} />
                       </div>
-                      <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-muted">
+                      <Badge variant="outline" className="text-label font-black uppercase tracking-widest border-muted">
                         {course.is_ready ? (course.category || "General") : "Constructing"}
                       </Badge>
                     </div>
@@ -189,7 +201,7 @@ export default function LearningVault() {
                     </div>
 
                     <div className="space-y-3">
-                      <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                      <div className="flex justify-between text-compact font-black uppercase tracking-widest">
                         <span className="text-subtle">Sync Progress</span>
                         <span className="text-primary font-bold">{Math.round(course.progress || 0)}%</span>
                       </div>
@@ -218,6 +230,8 @@ export default function LearningVault() {
                       
                       <Button 
                         disabled={!course.is_ready}
+                        aria-label={`Open ${course.title}`}
+                        title={course.is_ready ? `Open ${course.title}` : `${course.title} is still being generated`}
                         onClick={() => navigate(`/tutorials/${course.id}`)}
                         className={`rounded-xl px-4 py-6 transition-all shadow-none ${
                           course.is_ready 
@@ -235,6 +249,11 @@ export default function LearningVault() {
           })}
         </div>
       </div>
+      <CreateRoadmapModal
+        isOpen={isRoadmapModalOpen}
+        onClose={() => setIsRoadmapModalOpen(false)}
+        onCreated={() => { void fetchVault(); }}
+      />
     </div>
   );
 }

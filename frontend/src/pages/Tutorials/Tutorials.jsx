@@ -57,25 +57,25 @@ export default function Tutorials() {
       <div className="absolute top-0 right-0 w-1/3 h-full bg-surface -skew-x-6 translate-x-20 -z-10 border-l border-muted" />
 
       {/* LEFT: DYNAMIC INDEX */}
-      <div className="w-full lg:w-[420px] flex flex-col p-8 lg:p-12 z-10 border-r border-muted/50">
+      <div className="w-full lg:w-course-sidebar flex flex-col p-8 lg:p-12 z-10 border-r border-muted/50">
         <button 
           onClick={() => navigate('/learning-vault')}
-          className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-line-strong hover:text-foreground transition-all mb-16"
+          className="group flex items-center gap-3 text-compact font-black uppercase tracking-expanded text-line-strong hover:text-foreground transition-all mb-16"
         >
           <ArrowLeft size={14} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" /> 
           Back to Vault
         </button>
 
         <div className="mb-12">
-          <h1 className="text-5xl font-black tracking-[-0.06em] text-foreground leading-[0.9] mb-6">
+          <h1 className="text-5xl font-black tracking-tight-display text-foreground leading-compact mb-6">
             {courseData.title}
           </h1>
           <div className="space-y-2">
             <div className="flex justify-between items-end">
-              <span className="text-[10px] font-black text-subtle uppercase tracking-widest">Efficiency</span>
-              <span className="text-[10px] font-black text-primary uppercase">Active</span>
+              <span className="text-compact font-black text-subtle uppercase tracking-widest">Efficiency</span>
+              <span className="text-compact font-black text-primary uppercase">Active</span>
             </div>
-            <Progress value={40} className="h-[2px] bg-muted" />
+            <Progress value={40} className="h-0.5 bg-muted" />
           </div>
         </div>
 
@@ -94,7 +94,7 @@ export default function Tutorials() {
                     <span className={`text-4xl font-black transition-colors duration-500 ${openSection === section.id ? "text-primary" : "text-muted group-hover:text-border"}`}>
                       {(idx + 1).toString().padStart(2, '0')}
                     </span>
-                    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground">
+                    <span className="text-detail font-black uppercase tracking-editorial text-foreground">
                       {section.name}
                     </span>
                   </div>
@@ -104,7 +104,7 @@ export default function Tutorials() {
                     <button
                       key={ch.id}
                       onClick={() => { setSelectedSection(section); setSelectedChapter(ch); }}
-                      className={`w-full text-left px-5 py-2 text-[12px] font-bold transition-all flex items-center justify-between group/item ${
+                      className={`w-full text-left px-5 py-2 text-xs font-bold transition-all flex items-center justify-between group/item ${
                         selectedChapter?.id === ch.id ? "text-primary bg-surface/50 rounded-r-lg" : "text-subtle hover:text-foreground"
                       }`}
                     >
@@ -134,16 +134,16 @@ export default function Tutorials() {
               className="w-full max-w-5xl"
             >
               <div className="flex items-center gap-4 mb-10">
-                <Badge variant="outline" className="border-border text-subtle font-black px-4 py-1 text-[9px] tracking-[0.2em] uppercase rounded-full">
+                <Badge variant="outline" className="border-border text-subtle font-black px-4 py-1 text-label tracking-editorial uppercase rounded-full">
                   Node: {selectedChapter.id.split('-')[0]}
                 </Badge>
-                <div className="h-[1px] w-12 bg-muted" />
-                <span className="text-[10px] font-black text-line-strong uppercase tracking-widest flex items-center gap-2">
+                <div className="h-px w-12 bg-muted" />
+                <span className="text-compact font-black text-line-strong uppercase tracking-widest flex items-center gap-2">
                   <Clock size={12} /> {selectedChapter.time}
                 </span>
               </div>
 
-              <h2 className="text-7xl lg:text-9xl font-black text-foreground tracking-[-0.07em] leading-[0.8] mb-12">
+              <h2 className="text-7xl lg:text-9xl font-black text-foreground tracking-tight-hero leading-display mb-12">
                 {selectedChapter.title.split(' ').map((word, i) => (
                   <span key={i} className={i % 2 === 0 ? "block" : "block text-transparent stroke-text"}>
                     {word}
@@ -159,16 +159,16 @@ export default function Tutorials() {
                   
                   <div className="flex gap-10 border-t border-muted pt-8">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-line-strong uppercase tracking-widest mb-2">
+                      <span className="text-label font-black text-line-strong uppercase tracking-widest mb-2">
                         <Fingerprint className="inline mr-1" size={12}/> Complexity
                       </span>
-                      <span className="font-black text-foreground uppercase text-[12px] tracking-widest">{selectedChapter.complexity}</span>
+                      <span className="font-black text-foreground uppercase text-xs tracking-widest">{selectedChapter.complexity}</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-line-strong uppercase tracking-widest mb-2">
+                      <span className="text-label font-black text-line-strong uppercase tracking-widest mb-2">
                         <Zap className="inline mr-1" size={12}/> Yield
                       </span>
-                      <span className="font-black text-foreground uppercase text-[12px] tracking-widest">+50 XP</span>
+                      <span className="font-black text-foreground uppercase text-xs tracking-widest">+50 XP</span>
                     </div>
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export default function Tutorials() {
                   >
                     <Play className="text-foreground group-hover:text-primary-foreground group-hover:scale-125 transition-all ml-1" fill="currentColor" size={32} />
                   </button>
-                  <span className="text-[10px] font-black uppercase tracking-[0.5em] text-foreground">Execute Module</span>
+                  <span className="text-compact font-black uppercase tracking-display text-foreground">Execute Module</span>
                 </div>
               </div>
             </motion.div>

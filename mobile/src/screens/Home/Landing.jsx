@@ -3,13 +3,14 @@ import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Rocket, Cpu, Code2, Share2, Zap, Sparkles, ChevronRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { nativeTheme } from '../../theme/useThemeColors';
 
 export default function Landing() {
   const navigation = useNavigation();
 
   return (
     <SafeAreaView className="flex-1 bg-surface">
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={nativeTheme.statusBarStyle} />
       
       {/* Background Decorative Element */}
       <View className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-full" />
@@ -20,18 +21,18 @@ export default function Landing() {
         <View className="mt-6">
           <View className="flex-row items-center mb-4">
             <View className="h-2 w-12 bg-primary mr-2" />
-            <Text className="text-foreground font-black text-[10px] uppercase tracking-[4px]">
+            <Text className="text-foreground font-black text-compact uppercase tracking-display">
               V2.4 Protocol
             </Text>
           </View>
 
-          <Text className="text-6xl font-black text-foreground uppercase italic leading-[0.85] tracking-tighter">
+          <Text className="text-6xl font-black text-foreground uppercase italic leading-heading tracking-tighter">
             Technical{'\n'}
             <Text className="text-primary">Mastery.</Text>
           </Text>
 
           <View className="mt-6 border-l-4 border-primary pl-4">
-            <Text className="text-muted-foreground font-bold uppercase text-[11px] tracking-widest leading-4">
+            <Text className="text-muted-foreground font-bold uppercase text-detail tracking-widest leading-4">
               AI-Driven Curriculums.{'\n'}
               <Text className="text-foreground">One prompt. Total dominance.</Text>
             </Text>
@@ -46,7 +47,7 @@ export default function Landing() {
             <View className="h-36 w-36 items-center justify-center border-4 border-primary bg-card">
                <Sparkles size={56} strokeWidth={2.5} className="text-primary" />
                <View className="absolute -bottom-3 -right-3 bg-primary px-2 py-1">
-                  <Text className="text-primary-foreground text-[8px] font-black uppercase">Active_Engine</Text>
+                  <Text className="text-primary-foreground text-caption font-black uppercase">Active_Engine</Text>
                </View>
             </View>
           </View>
@@ -59,7 +60,7 @@ export default function Landing() {
             <TouchableOpacity 
               onPress={() => navigation.navigate('Signup')}
               activeOpacity={0.9}
-              className="h-20 flex-row items-center justify-between px-8 border-4 border-primary bg-primary mb-6 shadow-[8px_8px_0px_0px_rgb(var(--primary))]"
+              className="h-20 flex-row items-center justify-between px-8 border-4 border-primary bg-primary mb-6 shadow-offset-primary-xl"
             >
               <View className="flex-row items-center">
                 <Rocket size={24} strokeWidth={2.5} className="text-primary-foreground" />
@@ -75,7 +76,7 @@ export default function Landing() {
               activeOpacity={0.7}
               className="h-16 flex-row items-center justify-center border-2 border-primary bg-transparent"
             >
-              <Text className="text-sm font-black uppercase tracking-[2px] text-foreground">
+              <Text className="text-sm font-black uppercase tracking-wide text-foreground">
                 Access Dashboard
               </Text>
             </TouchableOpacity>

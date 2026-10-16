@@ -14,7 +14,6 @@ export default function TestDashboard() {
   // State for Controls
   const [level, setLevel] = useState("Intermediate");
   const [units, setUnits] = useState(15);
-  const [scope, setScope] = useState("Node Only");
   const [targetNode, setTargetNode] = useState("");
   const [availableCourses, setAvailableCourses] = useState([]);
 
@@ -22,6 +21,7 @@ export default function TestDashboard() {
   const [recentSyncs, setRecentSyncs] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   // 1. DYNAMIC DATA FETCHING: Courses & History
   useEffect(() => {
@@ -40,6 +40,7 @@ export default function TestDashboard() {
 
       } catch (err) {
         console.error("Neural Terminal sync failed:", err);
+        setActionError(err.response?.data?.detail || "Could not load your assessment data.");
       } finally {
         setIsLoadingHistory(false);
       }
@@ -52,13 +53,14 @@ export default function TestDashboard() {
   const handleInitialize = async () => {
     if (!targetNode) return;
 
+    setActionError("");
     setIsInitializing(true);
     try {
       const res = await api.post("/study/test/generate", {
         node: targetNode,
         depth: level,
         units: units,
-        scope: scope
+        scope: "Node Only"
       });
 
       const { session_id, questions, node_name } = res.data;
@@ -71,6 +73,7 @@ export default function TestDashboard() {
       });
     } catch (err) {
       console.error("Neural initialization failed", err);
+      setActionError(err.response?.data?.detail || "Could not initialize the assessment. Please try again.");
     } finally {
       setIsInitializing(false);
     }
@@ -81,7 +84,7 @@ export default function TestDashboard() {
     .reverse()
     .map(sync => ({
       // Formats timestamp into compact dots: "DD.MM"
-      date: new Date(sync.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }).replace(/\//g, '.'),
+      date: new Date(sync.completed_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }).replace(/\//g, '.'),
       score: sync.score,
       node: sync.node_name.toUpperCase()
     }));
@@ -94,16 +97,16 @@ export default function TestDashboard() {
         <div className="max-w-3xl">
           <div className="flex items-center gap-4 mb-6">
             <div className="h-2 w-2 bg-primary animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-subtle">Skillinex Systems</span>
+            <span className="text-compact font-black uppercase tracking-display text-subtle">Skillinex Systems</span>
           </div>
-          <h1 className="text-7xl lg:text-[9rem] font-black tracking-[-0.08em] leading-[0.75] uppercase italic">
+          <h1 className="text-7xl lg:text-display-xl font-black tracking-tight-max leading-ultra-tight uppercase italic">
             Skill <br /> 
             <span className="text-transparent stroke-text">Terminal</span>
           </h1>
         </div>
         <div className="lg:pb-4">
-          <div className="h-[2px] w-32 bg-muted mb-4 ml-auto" />
-          <p className="text-right text-[10px] font-bold uppercase tracking-[0.3em] text-line-strong max-w-[200px]">
+          <div className="h-0.5 w-32 bg-muted mb-4 ml-auto" />
+          <p className="text-right text-compact font-bold uppercase tracking-wide text-line-strong max-w-message-preview">
             Neural assessment & roadmap sync engine
           </p>
         </div>
@@ -118,19 +121,19 @@ export default function TestDashboard() {
           <section className="space-y-8">
             <div className="flex items-center gap-4">
                <BarChart3 size={20} strokeWidth={3} />
-               <h3 className="text-[10px] font-black uppercase tracking-[0.4em]">Neural Growth</h3>
+               <h3 className="text-compact font-black uppercase tracking-expanded">Neural Growth</h3>
             </div>
             
-            <div className="h-[350px] w-full bg-surface border border-muted relative p-6 flex flex-col justify-between">
+            <div className="h-chart-panel w-full bg-surface border border-muted relative p-6 flex flex-col justify-between">
               {isLoadingHistory ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-surface/50 z-20">
-                  <span className="text-[10px] font-black text-subtle uppercase tracking-[0.5em] animate-pulse">
+                  <span className="text-compact font-black text-subtle uppercase tracking-display animate-pulse">
                     Syncing_Data_Stream...
                   </span>
                 </div>
               ) : chartData.length === 0 ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-surface/50 z-20">
-                  <span className="text-[10px] font-black text-line-strong uppercase tracking-[0.5em]">
+                  <span className="text-compact font-black text-line-strong uppercase tracking-display">
                     Awaiting_Telemetry_Data
                   </span>
                 </div>
@@ -165,17 +168,17 @@ export default function TestDashboard() {
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-primary text-primary-foreground p-4 rounded-none border border-card/10 shadow-2xl min-w-[150px]">
-                              <p className="text-[8px] font-black text-highlight uppercase tracking-widest mb-1">
+                            <div className="bg-primary text-primary-foreground p-4 rounded-none border border-card/10 shadow-2xl min-w-data-filter">
+                              <p className="text-caption font-black text-highlight uppercase tracking-widest mb-1">
                                 {payload[0].payload.node}
                               </p>
                               <div className="flex justify-between items-baseline gap-4">
-                                <span className="text-[9px] font-bold text-primary-foreground/50 uppercase">Score:</span>
+                                <span className="text-label font-bold text-primary-foreground/50 uppercase">Score:</span>
                                 <span className="text-xl font-black italic tracking-tighter text-primary-foreground">
                                   {payload[0].value}%
                                 </span>
                               </div>
-                              <p className="text-[8px] text-primary-foreground/30 font-mono mt-1 text-right">
+                              <p className="text-caption text-primary-foreground/30 font-mono mt-1 text-right">
                                 SYNC.{payload[0].payload.date}
                               </p>
                             </div>
@@ -203,14 +206,14 @@ export default function TestDashboard() {
           <section className="space-y-8">
             <div className="flex items-center gap-4 border-b-2 border-primary pb-4">
                <Activity size={20} strokeWidth={3} />
-               <h3 className="text-[10px] font-black uppercase tracking-[0.4em]">Recent Syncs</h3>
+               <h3 className="text-compact font-black uppercase tracking-expanded">Recent Syncs</h3>
             </div>
             <Table>
               <TableHeader>
                 <TableRow className="border-muted hover:bg-transparent">
-                  <TableHead className="text-[9px] font-black uppercase tracking-widest px-0">Node</TableHead>
-                  <TableHead className="text-[9px] font-black uppercase tracking-widest text-center">Score</TableHead>
-                  <TableHead className="text-[9px] font-black uppercase tracking-widest text-right px-0">Status</TableHead>
+                  <TableHead className="text-label font-black uppercase tracking-widest px-0">Node</TableHead>
+                  <TableHead className="text-label font-black uppercase tracking-widest text-center">Score</TableHead>
+                  <TableHead className="text-label font-black uppercase tracking-widest text-right px-0">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -219,21 +222,21 @@ export default function TestDashboard() {
                     <TableRow key={sync.id} className="group border-surface">
                       <TableCell className="py-8 px-0">
                         <span className="block text-base font-black uppercase tracking-tighter italic">{sync.node_name}</span>
-                        <span className="text-[9px] text-line-strong font-bold uppercase tracking-widest italic">
-                            {new Date(sync.created_at).toLocaleDateString('en-GB').replace(/\//g, '.')}
+                        <span className="text-label text-line-strong font-bold uppercase tracking-widest italic">
+                            {new Date(sync.completed_at).toLocaleDateString('en-GB').replace(/\//g, '.')}
                         </span>
                       </TableCell>
                       <TableCell className="py-8 text-center">
                          <span className="text-3xl font-black italic tracking-tighter">{sync.score}%</span>
                       </TableCell>
                       <TableCell className="py-8 text-right px-0">
-                         <span className="text-[10px] font-black uppercase text-success italic">Synced</span>
+                         <span className="text-compact font-black uppercase text-success italic">Synced</span>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-12 text-center text-border text-[10px] font-black uppercase tracking-widest italic">
+                    <TableCell colSpan={3} className="py-12 text-center text-border text-compact font-black uppercase tracking-widest italic">
                         No History Found
                     </TableCell>
                   </TableRow>
@@ -247,12 +250,12 @@ export default function TestDashboard() {
         <aside className="lg:col-span-4 lg:sticky lg:top-10 dark-selection-zone">
           <div className="bg-primary text-muted p-10 relative overflow-hidden border border-card/5 shadow-2xl">
             
-            <div className="absolute -right-16 -top-16 w-32 h-32 bg-highlight/10 blur-[80px] pointer-events-none" />
+            <div className="absolute -right-16 -top-16 w-32 h-32 bg-highlight/10 blur-glow-sm pointer-events-none" />
             
             <div className="relative z-10 mb-12">
               <div className="flex items-center gap-2 mb-2">
                 <Zap size={12} className="text-highlight fill-highlight" />
-                <span className="text-[9px] font-black uppercase tracking-[0.6em] text-highlight">Initialization</span>
+                <span className="text-label font-black uppercase tracking-hero text-highlight">Initialization</span>
               </div>
               <h3 className="text-4xl font-black tracking-tighter uppercase italic leading-none text-primary-foreground">
                 Deploy <br/> 
@@ -263,9 +266,9 @@ export default function TestDashboard() {
             <div className="space-y-10 relative z-10">
               {/* 1. DYNAMIC NODE SELECT */}
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.4em] text-primary-foreground/30 px-1">Target Node</label>
+                <label className="text-label font-black uppercase tracking-expanded text-primary-foreground/30 px-1">Target Node</label>
                 <Select value={targetNode} onValueChange={setTargetNode}>
-                  <SelectTrigger className="bg-card/5 border-card/10 text-primary-foreground h-14 rounded-none focus:ring-0 focus:border-highlight text-[10px] font-bold uppercase tracking-widest px-6 hover:bg-card/10 transition-colors">
+                  <SelectTrigger className="bg-card/5 border-card/10 text-primary-foreground h-14 rounded-none focus:ring-0 focus:border-highlight text-compact font-bold uppercase tracking-widest px-6 hover:bg-card/10 transition-colors">
                     <SelectValue placeholder="Select Course Node" />
                   </SelectTrigger>
                   <SelectContent className="bg-primary border-card/10 text-primary-foreground rounded-none dark-selection-zone">
@@ -273,13 +276,13 @@ export default function TestDashboard() {
                       <SelectItem 
                         key={course.id} 
                         value={course.title} 
-                        className="focus:bg-highlight focus:text-foreground font-black uppercase text-[9px] cursor-pointer"
+                        className="focus:bg-highlight focus:text-foreground font-black uppercase text-label cursor-pointer"
                       >
                         {course.title}
                       </SelectItem>
                     ))}
                     {availableCourses.length === 0 && (
-                      <SelectItem value="none" disabled className="text-primary-foreground/20 italic text-[9px]">No Enrolled Nodes</SelectItem>
+                      <SelectItem value="none" disabled className="text-primary-foreground/20 italic text-label">No Enrolled Nodes</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -287,15 +290,15 @@ export default function TestDashboard() {
 
               {/* 2. LEVEL BUTTONS */}
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.4em] text-primary-foreground/30 px-1">Proficiency Depth</label>
+                <label className="text-label font-black uppercase tracking-expanded text-primary-foreground/30 px-1">Proficiency Depth</label>
                 <div className="grid grid-cols-3 gap-1 bg-card/5 p-1 border border-card/5">
                   {['Beginner', 'Intermediate', 'Advanced'].map((lvl) => (
                     <button 
                       key={lvl} 
                       onClick={() => setLevel(lvl)}
-                      className={`py-3 text-[9px] font-black uppercase transition-all duration-300 relative ${
+                      className={`py-3 text-label font-black uppercase transition-all duration-300 relative ${
                         level === lvl 
-                        ? 'bg-highlight text-foreground shadow-xl scale-[1.02] z-10 font-black' 
+                        ? 'bg-highlight text-foreground shadow-xl scale-hover z-10 font-black'
                         : 'text-primary-foreground/30 hover:text-primary-foreground/60 hover:bg-card/5'
                       }`}
                     >
@@ -305,35 +308,24 @@ export default function TestDashboard() {
                 </div>
               </div>
 
-              {/* 3. UNITS & SYNC */}
+              {/* 3. ASSESSMENT SIZE */}
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-3 border-l border-card/10 pl-5">
-                  <label className="text-[9px] font-black uppercase tracking-[0.4em] text-primary-foreground/30 italic">Units</label>
+                  <label className="text-label font-black uppercase tracking-expanded text-primary-foreground/30 italic">Units</label>
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-black italic tracking-tighter text-primary-foreground">{units}</span>
-                    <span className="text-[8px] font-black text-primary-foreground/20 uppercase tracking-widest">Queries</span>
+                    <span className="text-caption font-black text-primary-foreground/20 uppercase tracking-widest">Queries</span>
                   </div>
                   <input 
                     type="range" min="5" max="30" value={units} 
                     onChange={(e) => setUnits(parseInt(e.target.value))}
-                    className="w-full accent-highlight h-[2px] bg-card/10 appearance-none cursor-pointer" 
+                    className="w-full accent-highlight h-0.5 bg-card/10 appearance-none cursor-pointer"
                   />
                 </div>
                 
                 <div className="space-y-3 border-l border-card/10 pl-5">
-                  <label className="text-[9px] font-black uppercase tracking-[0.4em] text-primary-foreground/30 italic">Sync</label>
-                  <div className="flex flex-col gap-2">
-                    {['Node Only', 'Full Line'].map((m) => (
-                      <button 
-                        key={m} onClick={() => setScope(m)}
-                        className={`text-left text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
-                          scope === m ? 'text-highlight' : 'text-primary-foreground/20 hover:text-primary-foreground/50'
-                        }`}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
+                  <label className="text-label font-black uppercase tracking-expanded text-primary-foreground/30 italic">Scope</label>
+                  <p className="text-compact font-black uppercase tracking-editorial text-highlight">Selected Course</p>
                 </div>
               </div>
 
@@ -342,10 +334,10 @@ export default function TestDashboard() {
                 <button 
                   onClick={handleInitialize}
                   disabled={isInitializing || availableCourses.length === 0}
-                  className="group w-full h-20 bg-card hover:bg-highlight transition-all duration-700 flex items-center justify-center overflow-hidden relative active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="group w-full h-20 bg-card hover:bg-highlight transition-all duration-700 flex items-center justify-center overflow-hidden relative active:scale-press disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center gap-6 relative z-10 px-4 text-foreground">
-                    <span className="font-black uppercase tracking-[0.8em] text-xs group-hover:tracking-[1em] transition-all duration-500">
+                    <span className="font-black uppercase tracking-ultra text-xs group-hover:tracking-max transition-all duration-500">
                         {isInitializing ? "Initializing..." : "Initialize"}
                     </span>
                     {isInitializing ? (
@@ -356,19 +348,20 @@ export default function TestDashboard() {
                   </div>
                   <div className="absolute inset-0 bg-highlight translate-y-full group-hover:translate-y-0 transition-transform duration-700" />
                 </button>
+                {actionError && <p role="alert" className="mt-3 text-sm font-bold text-danger">{actionError}</p>}
                 
                 <div className="mt-8 flex justify-between items-end px-1 opacity-40">
                   <div className="space-y-1 group-hover:opacity-100 transition-opacity">
                     <div className="flex items-center justify-between">
-                      <span className="text-[7px] font-black text-primary-foreground/40 tracking-[0.4em] uppercase">System_Active</span>
-                      <span className="text-[7px] font-black text-highlight/80 uppercase">Node_Connected</span>
+                      <span className="text-tiny font-black text-primary-foreground/40 tracking-expanded uppercase">System_Active</span>
+                      <span className="text-tiny font-black text-highlight/80 uppercase">Node_Connected</span>
                     </div>
                     <div className="h-10 w-full bg-card/5 flex items-center px-3 border-l-2 border-highlight">
-                      <p className="text-[10px] font-mono font-black text-primary-foreground/80 tracking-tighter truncate uppercase italic">
+                      <p className="text-compact font-mono font-black text-primary-foreground/80 tracking-tighter truncate uppercase italic">
                         {targetNode ? `REQ://ASSESSMENT.${targetNode.replace(/\s+/g, '_')}` : "AWAITING_SELECTION"}
                       </p>
                     </div>
-                    <div className="flex justify-between text-[6px] font-bold text-primary-foreground/20 uppercase tracking-widest">
+                    <div className="flex justify-between text-micro font-bold text-primary-foreground/20 uppercase tracking-widest">
                       <span>© 2026 SKILLINEX</span>
                       <span>ENCRYPTED_TCP/IP</span>
                     </div>

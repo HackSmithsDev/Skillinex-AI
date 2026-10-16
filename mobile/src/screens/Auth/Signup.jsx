@@ -154,7 +154,7 @@ export default function Signup({ navigation }) {
 
   const ErrorBox = () => error ? (
     <View className="bg-danger-subtle border-2 border-danger p-4 mb-6">
-      <Text className="text-danger font-black text-[10px] uppercase text-center">{error}</Text>
+      <Text className="text-danger font-black text-compact uppercase text-center">{error}</Text>
     </View>
   ) : null;
 
@@ -177,10 +177,10 @@ export default function Signup({ navigation }) {
         {/* STEP 1: CREDENTIALS */}
         {step === 1 && (
           <View key="step1">
-            <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-[0.85]">
+            <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-heading">
               IDENTITY{'\n'}<Text className="text-primary">INIT</Text>
             </Text>
-            <Text className="text-[10px] font-bold text-subtle uppercase tracking-widest mt-4">Phase_01: Credential_Setup</Text>
+            <Text className="text-compact font-bold text-subtle uppercase tracking-widest mt-4">Phase_01: Credential_Setup</Text>
 
             <View className="mt-10">
               <CustomInput 
@@ -220,7 +220,7 @@ export default function Signup({ navigation }) {
               className="bg-primary h-16 mt-2 flex-row items-center justify-center border-b-8 border-primary"
             >
               {loading ? (
-                <ActivityIndicator color={colors['primary-foreground'] || '#FAFAFA'} />
+                <ActivityIndicator color={colors['primary-foreground']} />
               ) : (
                 <>
                   <Text className="text-primary-foreground font-black uppercase tracking-widest mr-2">Next_Phase</Text>
@@ -233,7 +233,7 @@ export default function Signup({ navigation }) {
               onPress={() => navigation.navigate('Login')}
               className="mt-8 py-4 border-2 border-primary"
             >
-              <Text className="text-foreground font-black uppercase text-center text-[10px] tracking-widest">
+              <Text className="text-foreground font-black uppercase text-center text-compact tracking-widest">
                 Return to <Text className="text-primary">Login_Node</Text>
               </Text>
             </TouchableOpacity>
@@ -243,10 +243,10 @@ export default function Signup({ navigation }) {
         {/* STEP 2: PERSONAL DETAILS */}
         {step === 2 && (
           <View key="step2">
-            <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-[0.85]">
+            <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-heading">
               PROFILE{'\n'}<Text className="text-primary">DATA</Text>
             </Text>
-            <Text className="text-[10px] font-bold text-subtle uppercase tracking-widest mt-4">Phase_02: Personal_Details</Text>
+            <Text className="text-compact font-bold text-subtle uppercase tracking-widest mt-4">Phase_02: Personal_Details</Text>
 
             <View className="mt-10">
               <View className="items-center mb-8">
@@ -258,9 +258,9 @@ export default function Signup({ navigation }) {
                   )}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={pickPhoto} className="bg-primary px-4 py-2 mt-3">
-                  <Text className="text-primary-foreground font-black uppercase text-[10px] tracking-widest">Choose Profile Pic</Text>
+                  <Text className="text-primary-foreground font-black uppercase text-compact tracking-widest">Choose Profile Pic</Text>
                 </TouchableOpacity>
-                <Text className="text-[8px] text-subtle font-bold mt-2">PNG, JPG OR JPEG</Text>
+                <Text className="text-caption text-subtle font-bold mt-2">PNG, JPG OR JPEG</Text>
               </View>
               <CustomInput 
                 label="FULL NAME"
@@ -277,7 +277,7 @@ export default function Signup({ navigation }) {
                 onChangeText={(val) => update({ age: val })}
                 value={formData.age}
               />
-              <Text className="text-[8px] font-black text-subtle uppercase tracking-widest mb-2 ml-1">GENDER</Text>
+              <Text className="text-caption font-black text-subtle uppercase tracking-widest mb-2 ml-1">GENDER</Text>
               <View className="flex-row flex-wrap gap-2 mb-6">
                 {GENDERS.map((g) => (
                   <TouchableOpacity
@@ -285,7 +285,7 @@ export default function Signup({ navigation }) {
                     onPress={() => update({ gender: g })}
                     className={`px-4 py-3 border-2 border-primary ${formData.gender === g ? 'bg-primary' : 'bg-card'}`}
                   >
-                    <Text className={`text-[10px] font-black uppercase ${formData.gender === g ? 'text-primary-foreground' : 'text-foreground'}`}>{g}</Text>
+                    <Text className={`text-compact font-black uppercase ${formData.gender === g ? 'text-primary-foreground' : 'text-foreground'}`}>{g}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -302,7 +302,7 @@ export default function Signup({ navigation }) {
                 placeholder="e.g. 2 years of Excel analytics, learning Python..." 
                 multiline
                 textAlignVertical="top"
-                className="bg-card border-2 border-primary h-28 pt-4 pl-12 pr-4 text-foreground shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+                className="bg-card border-2 border-primary h-28 pt-4 pl-12 pr-4 text-foreground shadow-offset-primary"
                 onChangeText={(val) => update({ experience: val })}
                 value={formData.experience}
               />
@@ -319,7 +319,7 @@ export default function Signup({ navigation }) {
               </TouchableOpacity>
               <TouchableOpacity 
                 onPress={goToInterests} 
-                className="flex-[3] h-16 bg-primary items-center justify-center border-b-8 border-primary"
+                className="flex-three h-16 bg-primary items-center justify-center border-b-8 border-primary"
               >
                 <Text className="text-primary-foreground font-black uppercase tracking-widest">Next_Phase</Text>
               </TouchableOpacity>
@@ -330,17 +330,17 @@ export default function Signup({ navigation }) {
         {/* STEP 3: AI-SUGGESTED INTERESTS */}
         {step === 3 && (
           <View key="step3">
-            <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-[0.85]">
+            <Text className="text-5xl font-black uppercase italic tracking-tighter text-foreground leading-heading">
               SKILL{'\n'}<Text className="text-primary">MATRIX</Text>
             </Text>
-            <Text className="text-[10px] font-bold text-subtle uppercase tracking-widest mt-4">
+            <Text className="text-compact font-bold text-subtle uppercase tracking-widest mt-4">
               Phase_03: AI_Suggested_Interests (tap to select / change level)
             </Text>
 
             {suggesting ? (
               <View className="py-12 items-center">
                 <Sparkles size={24} className="text-primary" />
-                <Text className="text-[10px] font-black uppercase tracking-widest text-subtle mt-3">Generating suggestions...</Text>
+                <Text className="text-compact font-black uppercase tracking-widest text-subtle mt-3">Generating suggestions...</Text>
               </View>
             ) : (
               <View className="flex-row flex-wrap gap-2 mt-8 mb-6">
@@ -353,7 +353,7 @@ export default function Signup({ navigation }) {
                       className={`px-4 py-3 border-2 ${lvl ? 'bg-primary border-primary' : 'bg-card border-border'}`}
                     >
                       {/* FIXED: unselected uses text-foreground for sharp contrast on white card */}
-                      <Text className={`text-[10px] font-black uppercase ${lvl ? 'text-primary-foreground' : 'text-foreground'}`}>
+                      <Text className={`text-compact font-black uppercase ${lvl ? 'text-primary-foreground' : 'text-foreground'}`}>
                         {s.name}{lvl ? ` · ${lvl}` : ''}
                       </Text>
                     </TouchableOpacity>
@@ -363,7 +363,7 @@ export default function Signup({ navigation }) {
             )}
 
             <TouchableOpacity onPress={fetchSuggestions} disabled={suggesting || loading} className="mb-8 self-start">
-              <Text className="text-primary font-black uppercase text-[10px] tracking-widest">Regenerate_Suggestions</Text>
+              <Text className="text-primary font-black uppercase text-compact tracking-widest">Regenerate_Suggestions</Text>
             </TouchableOpacity>
 
             <ErrorBox />
@@ -379,10 +379,10 @@ export default function Signup({ navigation }) {
               <TouchableOpacity 
                 onPress={handleSignup}
                 disabled={loading || suggesting}
-                className="flex-[3] h-16 bg-primary items-center justify-center border-b-8 border-primary"
+                className="flex-three h-16 bg-primary items-center justify-center border-b-8 border-primary"
               >
                 {loading ? (
-                  <ActivityIndicator color={colors['primary-foreground'] || '#FAFAFA'} />
+                  <ActivityIndicator color={colors['primary-foreground']} />
                 ) : (
                   <Text className="text-primary-foreground font-black uppercase tracking-widest">Complete_Setup</Text>
                 )}
@@ -397,12 +397,11 @@ export default function Signup({ navigation }) {
 
 const CustomInput = ({ label, icon, ...props }) => (
   <View className="mb-6">
-    <Text className="text-[8px] font-black text-subtle uppercase tracking-widest mb-2 ml-1">{label}</Text>
+    <Text className="text-caption font-black text-subtle uppercase tracking-widest mb-2 ml-1">{label}</Text>
     <View className="relative">
       <View className="absolute left-4 top-4 z-10">{icon}</View>
       <TextInput
-        style={{ fontSize: 14, fontWeight: '700' }}
-        className="bg-card border-2 border-primary h-14 pl-12 pr-4 text-foreground shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+        className="bg-card border-2 border-primary h-14 pl-12 pr-4 text-sm font-bold text-foreground shadow-offset-primary"
         placeholderClassName="text-line-strong"
         {...props}
       />

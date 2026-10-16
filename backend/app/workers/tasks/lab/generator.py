@@ -5,6 +5,7 @@ from app.workers.celery_app import celery_app
 from app.integrations.gemini import gemini_client
 from app.workers.tasks.lab.schema import LabChallengeSchema
 from app.utils.redis import set_active_lab_task
+from app.integrations.shared import WANDBOX_COMPILERS
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,8 @@ def generate_lab_challenge(self, user_id: str, topic: str, difficulty: str = "In
 
         validated_task = LabChallengeSchema(**raw_response)
         task_data = validated_task.model_dump()
+        if task_data["language"] not in WANDBOX_COMPILERS:
+            raise ValueError(f"Unsupported lab runtime: {task_data['language']}")
 
         # Cache task in Redis
         asyncio.run(set_active_lab_task(user_id, task_data))
@@ -76,8 +79,8 @@ def generate_lab_challenge(self, user_id: str, topic: str, difficulty: str = "In
             description=f"Implement the foundational solution for {topic}. Ensure all internal sanity assertions hold.",
             target_criteria="Execute successfully and print 1 to stdout.",
             language="python",
-            starter_code=f"# {topic} Solution Node\\ndef solution():\\n    # Implement your logic\\n    return 1\\n",
-            test_harness="\nif __name__ == '__main__':\n    print(solution())\n"
+            starter_code=f"# {topic} Solution Node\ndef solve():\n    # Implement your logic\n    return 1\n",
+            test_harness="\nif __name__ == '__main__':\n    assert solve() == 1\n    print(1)\n"
         ).model_dump()
 
         asyncio.run(set_active_lab_task(user_id, fallback))

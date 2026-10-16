@@ -34,6 +34,8 @@ async def generate_test(
         )
         result = await db.execute(query)
         course = result.scalar_one_or_none()
+        if not course:
+            raise HTTPException(status_code=404, detail="Course not found.")
 
         all_available_questions = []
 
@@ -53,17 +55,10 @@ async def generate_test(
         pool = filtered_questions if filtered_questions else all_available_questions
         
         if not pool:
-            final_set = [
-                {
-                    "question": f"Analyze the core principles of {request.node}...",
-                    "options": ["Option A", "Option B", "Option C", "Option D"],
-                    "answer": "Option A",
-                    "explanation": "Default system fallback."
-                } for _ in range(request.units)
-            ]
-        else:
-            # Prevent sampling more than exists
-            final_set = random.sample(pool, min(len(pool), request.units))
+            raise HTTPException(status_code=422, detail="No assessment questions are available for this course yet.")
+
+        # Prevent sampling more than exists
+        final_set = random.sample(pool, min(len(pool), request.units))
 
         # 3. Redis Session Link
         session_id = f"term_{uuid.uuid4().hex[:12]}"
@@ -84,6 +79,8 @@ async def generate_test(
             "system_ref": f"DURG-TERM-{uuid.uuid4().hex[:6].upper()}"
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Terminal Logic Error: {e}")
         raise HTTPException(status_code=500, detail="Neural synthesis failed.")
@@ -99,6 +96,8 @@ async def submit_test_result(
         active_session = await get_session_data(session_id)
         if not active_session:
              raise HTTPException(status_code=400, detail="Neural link expired.")
+        if active_session.get("user_id") != current_user.id:
+            raise HTTPException(status_code=403, detail="Neural link belongs to another user.")
 
         # Create Record
         new_test = TestResult(
@@ -124,6 +123,9 @@ async def submit_test_result(
         
         return new_test
         
+    except HTTPException:
+        await db.rollback()
+        raise
     except Exception as e:
         await db.rollback()
         print(f"Sync Error: {e}")
