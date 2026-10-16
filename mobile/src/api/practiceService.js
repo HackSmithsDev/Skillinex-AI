@@ -1,9 +1,25 @@
 import api from './axios';
 
-const practiceService = {
-  languages: async () => (await api.get('/study/practice/user-languages')).data,
-  execute: async (payload) => (await api.post('/study/practice/execute', payload)).data,
-  verifyLab: async (payload) => (await api.post('/study/practice/verify-lab', payload)).data,
-};
+export default {
+  languages: async () => {
+    const res = await api.get('/study/practice/user-languages');
+    return res.data;
+  },
 
-export default practiceService;
+  getActiveTask: async (topic = null) => {
+    const res = await api.get('/study/practice/active-task', {
+      params: topic ? { topic } : {}
+    });
+    return res.data;
+  },
+
+  execute: async (payload) => {
+    const res = await api.post('/study/practice/execute', payload);
+    return res.data;
+  },
+
+  verifyLab: async (payload) => {
+    const res = await api.post('/study/practice/verify-lab', payload);
+    return res.data;
+  },
+};

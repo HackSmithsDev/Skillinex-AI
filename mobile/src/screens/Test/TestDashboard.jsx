@@ -63,7 +63,6 @@ export default function TestTerminal({ navigation }) {
       {/* 1. BRUTALIST HEADER */}
       <View className="px-8 pt-20 pb-10">
         <View className="flex-row items-center mb-4">
-          {/* Static indicator to replace the crashing animation prop */}
           <View className="h-2 w-2 bg-primary mr-3 animate-pulse" />
           <Text className="text-[10px] font-black uppercase tracking-[4px] text-subtle">
             Skillinex_Systems // {user?.full_name?.split(' ')[0] || 'Node_Active'}
@@ -109,7 +108,7 @@ export default function TestTerminal({ navigation }) {
         ))}
       </View>
 
-      {/* 4. THE CONTROL MODULE (Dark Mode) */}
+      {/* 4. THE CONTROL MODULE (Dark Container) */}
       <View className="mx-6 bg-primary p-8 border-4 border-primary shadow-[8px_8px_0px_0px_rgb(var(--success))]">
         <View className="mb-10">
           <View className="flex-row items-center mb-2">
@@ -123,7 +122,7 @@ export default function TestTerminal({ navigation }) {
 
         {/* TARGET NODE */}
         <View className="mb-10">
-          <Text className="text-[8px] font-black uppercase tracking-[3px] text-primary-foreground/30 mb-3 px-1">Target_Node</Text>
+          <Text className="text-[8px] font-black uppercase tracking-[3px] text-primary-foreground/40 mb-3 px-1">Target_Node</Text>
           {courses.length === 0 && (
             <Text className="text-[9px] font-black uppercase text-primary-foreground/40">No_Ready_Courses</Text>
           )}
@@ -132,25 +131,26 @@ export default function TestTerminal({ navigation }) {
               key={c.id}
               activeOpacity={1}
               onPress={() => setTargetNode(c.title)}
-              className={`py-3 px-4 mb-1 ${targetNode === c.title ? 'bg-card' : 'bg-card/5'}`}
+              className={`py-3 px-4 mb-1 ${targetNode === c.title ? 'bg-card' : 'bg-card/10'}`}
             >
-              <Text className={`text-[10px] font-black uppercase ${targetNode === c.title ? 'text-foreground' : 'text-primary-foreground/40'}`}>{c.title}</Text>
+              <Text className={`text-[10px] font-black uppercase ${targetNode === c.title ? 'text-foreground' : 'text-primary-foreground/60'}`}>{c.title}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* DEPTH SELECTOR */}
         <View className="mb-10">
-          <Text className="text-[8px] font-black uppercase tracking-[3px] text-primary-foreground/30 mb-3 px-1">Proficiency_Depth</Text>
-          <View className="flex-row bg-card/5 p-1 border border-card/10">
+          <Text className="text-[8px] font-black uppercase tracking-[3px] text-primary-foreground/40 mb-3 px-1">Proficiency_Depth</Text>
+          <View className="flex-row bg-card/10 p-1 border border-card/20">
             {['Beginner', 'Intermediate', 'Advanced'].map((lvl) => (
               <TouchableOpacity 
                 key={lvl}
                 onPress={() => setLevel(lvl)}
                 activeOpacity={1}
-                className={`flex-1 py-4 items-center ${level === lvl ? 'bg-primary' : 'bg-transparent'}`}
+                /* FIXED: Active tab uses bg-card with text-foreground for high contrast */
+                className={`flex-1 py-4 items-center ${level === lvl ? 'bg-card' : 'bg-transparent'}`}
               >
-                <Text className={`text-[9px] font-black uppercase ${level === lvl ? 'text-foreground' : 'text-primary-foreground/40'}`}>
+                <Text className={`text-[9px] font-black uppercase ${level === lvl ? 'text-foreground' : 'text-primary-foreground/60'}`}>
                   {lvl}
                 </Text>
               </TouchableOpacity>
@@ -161,14 +161,14 @@ export default function TestTerminal({ navigation }) {
         {/* UNITS SLIDER COUNTER */}
         <View className="flex-row gap-6 mb-10">
           <View className="flex-1 border-l-2 border-highlight/50 pl-4">
-            <Text className="text-[8px] font-black uppercase text-primary-foreground/30 italic mb-1">Units</Text>
+            <Text className="text-[8px] font-black uppercase text-primary-foreground/40 italic mb-1">Units</Text>
             <View className="flex-row items-baseline">
               <Text className="text-5xl font-black text-primary-foreground italic tracking-tighter">{units}</Text>
-              <Text className="ml-2 text-[8px] font-black text-primary-foreground/20 uppercase tracking-[1px]">Queries</Text>
+              <Text className="ml-2 text-[8px] font-black text-primary-foreground/40 uppercase tracking-[1px]">Queries</Text>
             </View>
           </View>
-          <View className="flex-1 border-l-2 border-card/10 pl-4">
-            <Text className="text-[8px] font-black uppercase text-primary-foreground/30 italic mb-1">Sync</Text>
+          <View className="flex-1 border-l-2 border-card/20 pl-4">
+            <Text className="text-[8px] font-black uppercase text-primary-foreground/40 italic mb-1">Sync</Text>
             <Text className="text-[10px] font-black text-success uppercase tracking-[2px]">Node_Active</Text>
           </View>
         </View>
@@ -178,20 +178,21 @@ export default function TestTerminal({ navigation }) {
           activeOpacity={0.9}
           onPress={handleInitialize}
           disabled={initializing || !targetNode}
-          className="bg-card h-20 items-center justify-center flex-row border-b-8 border-primary active:translate-y-1 active:border-b-4 transition-all"
+          className="bg-card h-20 items-center justify-center flex-row border-b-8 border-primary-foreground active:translate-y-1 active:border-b-4 transition-all"
         >
           <Text className="text-foreground font-black uppercase tracking-[5px] text-xs mr-4">Initialize</Text>
           {initializing ? <ActivityIndicator color={colors.primary} /> : <Rocket size={20} className="text-primary" />}
         </TouchableOpacity>
 
-        <View className="mt-8 flex-row justify-between items-end opacity-40">
+        {/* FIXED: Corner dots bg-primary -> bg-primary-foreground/40 */}
+        <View className="mt-8 flex-row justify-between items-end opacity-60">
           <View>
             <Text className="text-[8px] font-black uppercase text-primary-foreground tracking-[2px]">SKILLINEX_ID: {user?.id?.slice(0,8) || 'SKILL-AI'}</Text>
             <Text className="text-[7px] font-black uppercase text-primary-foreground tracking-[1px] mt-1">Durg_Terminal_V2.0</Text>
           </View>
           <View className="flex-row gap-2">
-            <View className="h-1.5 w-1.5 rounded-full bg-primary" />
-            <View className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <View className="h-1.5 w-1.5 rounded-full bg-primary-foreground/40" />
+            <View className="h-1.5 w-1.5 rounded-full bg-primary-foreground/40" />
           </View>
         </View>
       </View>

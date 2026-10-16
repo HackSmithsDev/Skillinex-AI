@@ -101,8 +101,9 @@ export default function QuizSession({ navigation, route }) {
         {/* 2. QUESTION STAGE */}
         <View className="py-12">
           <View className="flex-row items-start mb-10">
+            {/* FIXED: Zap icon text-primary -> text-primary-foreground */}
             <View className="bg-primary p-2 mt-1 shadow-[3px_3px_0px_0px_rgb(var(--success))]">
-                <Zap size={20} strokeWidth={3} className="text-primary" />
+                <Zap size={20} strokeWidth={3} className="text-primary-foreground" />
             </View>
             <Text className="ml-5 text-2xl font-black text-foreground leading-tight uppercase italic tracking-tighter flex-1">
               {q.question}
@@ -122,11 +123,11 @@ export default function QuizSession({ navigation, route }) {
                   : 'border-muted bg-card'
                 }`}
               >
-                {/* Custom Square Checkbox */}
+                {/* FIXED: Selected checkbox inner indicator bg-primary -> bg-primary-foreground */}
                 <View className={`h-6 w-6 border-2 items-center justify-center ${
-                  selectedOption === i ? 'border-primary bg-primary' : 'border-border bg-card'
+                  selectedOption === i ? 'border-primary-foreground bg-primary' : 'border-border bg-card'
                 }`}>
-                  {selectedOption === i && <View className="h-3 w-3 bg-primary" />}
+                  {selectedOption === i && <View className="h-3 w-3 bg-primary-foreground" />}
                 </View>
 
                 <Text className={`ml-5 text-xs font-black uppercase tracking-widest flex-1 ${
@@ -151,6 +152,7 @@ export default function QuizSession({ navigation, route }) {
           </Text>
         </View>
 
+        {/* FIXED: Footer CTA button text and icon contrast classes */}
         <TouchableOpacity
           disabled={!hasSelection || submitting}
           onPress={handleNext}
@@ -159,12 +161,18 @@ export default function QuizSession({ navigation, route }) {
             hasSelection ? 'bg-primary border-subtle' : 'bg-border border-line-strong'
           }`}
         >
-          <Text className={`text-sm font-black uppercase tracking-[0.4em] italic ${
-            hasSelection ? 'text-foreground' : 'text-subtle'
-          }`}>
-            {currentStep === totalQuestions ? "Finalize_Sync" : "Next_Node"}
-          </Text>
-          <ArrowRight size={20} className={`ml-4 ${hasSelection ? "text-primary" : "text-subtle"}`} />
+          {submitting ? (
+            <ActivityIndicator color={colors['primary-foreground']} />
+          ) : (
+            <>
+              <Text className={`text-sm font-black uppercase tracking-[0.4em] italic ${
+                hasSelection ? 'text-primary-foreground' : 'text-subtle'
+              }`}>
+                {currentStep === totalQuestions ? "Finalize_Sync" : "Next_Node"}
+              </Text>
+              <ArrowRight size={20} className={`ml-4 ${hasSelection ? "text-primary-foreground" : "text-subtle"}`} />
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

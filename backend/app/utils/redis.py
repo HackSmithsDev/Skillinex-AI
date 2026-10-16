@@ -29,3 +29,17 @@ async def get_session_data(session_id: str) -> Optional[Any]:
 async def delete_session(session_id: str):
     """Wipes session from memory after submission or cancellation."""
     await redis_client.delete(f"session:{session_id}")
+
+# --- LAB TASK CACHE LOGIC ---
+async def set_active_lab_task(user_id: str, data: Any, expire_seconds: int = 86400):
+    """Caches the dynamic lab challenge for 24 hours."""
+    await redis_client.set(f"lab:active:{user_id}", json.dumps(data), ex=expire_seconds)
+
+async def get_active_lab_task(user_id: str) -> Optional[Any]:
+    """Retrieves the cached active lab challenge."""
+    raw_data = await redis_client.get(f"lab:active:{user_id}")
+    return json.loads(raw_data) if raw_data else None
+
+async def delete_active_lab_task(user_id: str):
+    """Clears the active lab challenge."""
+    await redis_client.delete(f"lab:active:{user_id}")

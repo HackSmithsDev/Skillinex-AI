@@ -6,9 +6,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { 
   Camera, ChevronLeft, ChevronRight, 
-  Database, Terminal, ShieldCheck, 
-  LogOut, BarChart3, Zap, Settings,
-  Cpu, Layers, Trash2
+  Terminal, ShieldCheck, LogOut, 
+  Zap, Settings, Cpu, Layers, Trash2
 } from 'lucide-react-native';
 import { AuthContext } from '../../context/AuthContext';
 import { resolveMediaUrl, errorMessage } from '../../api/axios';
@@ -96,6 +95,7 @@ export default function Profile({ navigation }) {
       <View className="px-6 pt-14 pb-4 border-b-4 border-primary flex-row justify-between items-center bg-card">
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
           className="h-10 w-10 border-2 border-primary items-center justify-center bg-card shadow-[2px_2px_0px_0px_rgb(var(--primary))]"
         >
           <ChevronLeft size={20} strokeWidth={3} className="text-primary" />
@@ -106,6 +106,7 @@ export default function Profile({ navigation }) {
         </Text>
 
         <TouchableOpacity 
+          activeOpacity={0.8}
           className="h-10 w-10 border-2 border-primary items-center justify-center bg-primary"
         >
           <Settings size={18} className="text-primary-foreground" />
@@ -131,7 +132,6 @@ export default function Profile({ navigation }) {
 
         {/* 3. HARDWARE CORE (Avatar & XP) */}
         <View className="p-6 flex-row gap-4">
-          {/* Avatar with Neo-Brutalist Frame */}
           <View className="relative">
             <View className="w-32 h-32 border-4 border-primary bg-card p-1 shadow-[6px_6px_0px_0px_rgb(var(--success))]">
               <View className="flex-1 bg-muted overflow-hidden items-center justify-center">
@@ -139,16 +139,23 @@ export default function Profile({ navigation }) {
                   source={{ uri: avatarUri }}
                   className="w-24 h-24"
                 />
-                {/* Visual Scanline Effect */}
                 <View className="absolute top-0 left-0 w-full h-[1px] bg-primary/50" style={{ top: '40%' }} />
               </View>
             </View>
-            <TouchableOpacity onPress={pickAvatar} disabled={loading} className="absolute -bottom-1 -right-1 bg-primary p-2 border-2 border-card">
-              {loading ? <ActivityIndicator size="small" color={colors['primary-foreground']} /> : <Camera size={14} className="text-primary-foreground" />}
+            <TouchableOpacity 
+              onPress={pickAvatar} 
+              disabled={loading} 
+              activeOpacity={0.8}
+              className="absolute -bottom-1 -right-1 bg-primary p-2 border-2 border-card"
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color={colors['primary-foreground']} />
+              ) : (
+                <Camera size={14} className="text-primary-foreground" />
+              )}
             </TouchableOpacity>
           </View>
 
-          {/* XP & Level Module */}
           <View className="flex-1 bg-primary p-5 border-b-8 border-primary shadow-xl justify-between">
             <View className="flex-row justify-between items-center">
                <Text className="text-[8px] font-black text-success uppercase tracking-[2px]">Neural_Credits</Text>
@@ -158,7 +165,7 @@ export default function Profile({ navigation }) {
               <Text className="text-5xl font-black italic text-primary-foreground leading-none tracking-tighter">
                 {user?.xp_points || 0}
               </Text>
-              <Text className="text-[10px] font-black text-primary-foreground/30 uppercase mt-1">Level_{level}</Text>
+              <Text className="text-[10px] font-black text-primary-foreground/40 uppercase mt-1">Level_{level}</Text>
             </View>
           </View>
         </View>
@@ -190,7 +197,7 @@ export default function Profile({ navigation }) {
               </View>
             )) : <Text className="text-[10px] italic text-subtle font-bold">Waiting for Stack Sync...</Text>}
             
-            <TouchableOpacity className="border-2 border-dashed border-line-strong px-4 py-2 bg-surface/50">
+            <TouchableOpacity activeOpacity={0.7} className="border-2 border-dashed border-line-strong px-4 py-2 bg-surface/50">
               <Text className="text-[10px] font-black text-subtle uppercase">+ Add_Module</Text>
             </TouchableOpacity>
           </View>
@@ -204,22 +211,63 @@ export default function Profile({ navigation }) {
           </View>
           
           {panel && (
-            <View className="border-2 border-primary bg-surface p-4 mb-4">
+            <View className={`border-2 ${panel === 'delete' ? 'border-danger bg-danger-subtle/30' : 'border-primary bg-surface'} p-4 mb-4`}>
               {panel === 'password' ? (
                 <>
-                  <TextInput value={oldPw} onChangeText={setOldPw} secureTextEntry placeholder="CURRENT_PASSWORD" placeholderClassName="text-subtle" className="border-2 border-primary bg-card p-3 mb-3 text-foreground font-bold" />
-                  <TextInput value={newPw} onChangeText={setNewPw} secureTextEntry placeholder="NEW_PASSWORD (8+)" placeholderClassName="text-subtle" className="border-2 border-primary bg-card p-3 mb-3 text-foreground font-bold" />
+                  <TextInput 
+                    value={oldPw} 
+                    onChangeText={setOldPw} 
+                    secureTextEntry 
+                    placeholder="CURRENT_PASSWORD" 
+                    placeholderClassName="text-subtle" 
+                    className="border-2 border-primary bg-card p-3 mb-3 text-foreground font-bold" 
+                  />
+                  <TextInput 
+                    value={newPw} 
+                    onChangeText={setNewPw} 
+                    secureTextEntry 
+                    placeholder="NEW_PASSWORD (8+)" 
+                    placeholderClassName="text-subtle" 
+                    className="border-2 border-primary bg-card p-3 mb-3 text-foreground font-bold" 
+                  />
                 </>
               ) : panel === 'delete' ? (
                 <>
                   <Text className="text-[10px] font-black uppercase text-danger mb-3">Warning: permanently purges your account and all learning data.</Text>
-                  <TextInput value={purgePw} onChangeText={setPurgePw} secureTextEntry placeholder="CONFIRM_PASSWORD" placeholderClassName="text-subtle" className="border-2 border-danger bg-card p-3 mb-3 text-foreground font-bold" />
+                  <TextInput 
+                    value={purgePw} 
+                    onChangeText={setPurgePw} 
+                    secureTextEntry 
+                    placeholder="CONFIRM_PASSWORD" 
+                    placeholderClassName="text-subtle" 
+                    className="border-2 border-danger bg-card p-3 mb-3 text-foreground font-bold" 
+                  />
                 </>
               ) : (
-                <TextInput value={comment} onChangeText={setComment} multiline placeholder="YOUR_FEEDBACK" placeholderClassName="text-subtle" className="border-2 border-primary bg-card p-3 mb-3 h-24 text-foreground font-bold" style={{ textAlignVertical: 'top' }} />
+                <TextInput 
+                  value={comment} 
+                  onChangeText={setComment} 
+                  multiline 
+                  placeholder="YOUR_FEEDBACK" 
+                  placeholderClassName="text-subtle" 
+                  className="border-2 border-primary bg-card p-3 mb-3 h-24 text-foreground font-bold" 
+                  style={{ textAlignVertical: 'top' }} 
+                />
               )}
-              <TouchableOpacity onPress={submitPanel} disabled={busy} className="bg-primary h-12 items-center justify-center">
-                {busy ? <ActivityIndicator color={colors['primary-foreground']} /> : <Text className="text-primary-foreground font-black uppercase tracking-[2px] text-xs">{panel === 'delete' ? 'Confirm_Purge' : 'Submit'}</Text>}
+              
+              <TouchableOpacity 
+                onPress={submitPanel} 
+                disabled={busy} 
+                activeOpacity={0.8}
+                className={`${panel === 'delete' ? 'bg-danger border-2 border-danger' : 'bg-primary'} h-12 items-center justify-center`}
+              >
+                {busy ? (
+                  <ActivityIndicator color={colors['primary-foreground']} />
+                ) : (
+                  <Text className="text-primary-foreground font-black uppercase tracking-[2px] text-xs">
+                    {panel === 'delete' ? 'Confirm_Purge' : 'Submit'}
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
           )}

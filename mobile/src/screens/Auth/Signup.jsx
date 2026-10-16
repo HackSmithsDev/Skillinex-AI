@@ -6,10 +6,11 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { 
   User, Mail, Lock, Briefcase, Sparkles, Camera, FileText,
-  ChevronRight, ChevronLeft, CheckCircle2 
+  ChevronRight, ChevronLeft 
 } from 'lucide-react-native';
 import authService from '../../api/authService';
 import { errorMessage } from '../../api/axios';
+import useThemeColors from '../../theme/useThemeColors';
 
 const LEVELS = ['Beginner', 'Intermediate', 'Pro'];
 const GENDERS = ["Male", "Female", "Non-binary", "Prefer not to say"];
@@ -20,6 +21,7 @@ export default function Signup({ navigation }) {
   const [suggesting, setSuggesting] = useState(false);
   const [error, setError] = useState('');
   const [suggestions, setSuggestions] = useState([]);
+  const colors = useThemeColors();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -48,7 +50,6 @@ export default function Signup({ navigation }) {
     update({ photo: { uri: a.uri, name: a.fileName || 'avatar.jpg', type } });
   };
 
-  // Step 1 -> 2: validate credentials and block if the email is already registered.
   const goToDetails = async () => {
     const email = formData.email.toLowerCase().trim();
     if (!email || !formData.password || !formData.confirmPassword) {
@@ -93,7 +94,6 @@ export default function Signup({ navigation }) {
     }
   };
 
-  // Step 2 -> 3: validate personal details, then ask AI for interests.
   const goToInterests = () => {
     const age = parseInt(formData.age, 10);
     if (!formData.full_name.trim()) {
@@ -219,7 +219,9 @@ export default function Signup({ navigation }) {
               disabled={loading}
               className="bg-primary h-16 mt-2 flex-row items-center justify-center border-b-8 border-primary"
             >
-              {loading ? <ActivityIndicator className="text-primary-foreground" /> : (
+              {loading ? (
+                <ActivityIndicator color={colors['primary-foreground'] || '#FAFAFA'} />
+              ) : (
                 <>
                   <Text className="text-primary-foreground font-black uppercase tracking-widest mr-2">Next_Phase</Text>
                   <ChevronRight size={18} className="text-primary-foreground" />
@@ -350,7 +352,8 @@ export default function Signup({ navigation }) {
                       onPress={() => cycleLevel(s)}
                       className={`px-4 py-3 border-2 ${lvl ? 'bg-primary border-primary' : 'bg-card border-border'}`}
                     >
-                      <Text className={`text-[10px] font-black uppercase ${lvl ? 'text-primary-foreground' : 'text-subtle'}`}>
+                      {/* FIXED: unselected uses text-foreground for sharp contrast on white card */}
+                      <Text className={`text-[10px] font-black uppercase ${lvl ? 'text-primary-foreground' : 'text-foreground'}`}>
                         {s.name}{lvl ? ` · ${lvl}` : ''}
                       </Text>
                     </TouchableOpacity>
@@ -378,7 +381,9 @@ export default function Signup({ navigation }) {
                 disabled={loading || suggesting}
                 className="flex-[3] h-16 bg-primary items-center justify-center border-b-8 border-primary"
               >
-                {loading ? <ActivityIndicator className="text-primary-foreground" /> : (
+                {loading ? (
+                  <ActivityIndicator color={colors['primary-foreground'] || '#FAFAFA'} />
+                ) : (
                   <Text className="text-primary-foreground font-black uppercase tracking-widest">Complete_Setup</Text>
                 )}
               </TouchableOpacity>

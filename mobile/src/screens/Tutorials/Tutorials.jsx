@@ -64,7 +64,6 @@ export default function Tutorials({ navigation, route }) {
             <Text className="text-5xl font-black tracking-tighter text-foreground leading-[0.85] mb-2 uppercase italic">
               {course.title}
             </Text>
-            {/* CHANGED: tracking-[0.3em] -> tracking-[3px] */}
             <Text className="text-[10px] font-bold text-subtle uppercase tracking-[3px] mb-8">System_Curriculum</Text>
             
             <View className="h-2 bg-primary w-20 mb-10" />
@@ -76,10 +75,10 @@ export default function Tutorials({ navigation, route }) {
                   activeOpacity={0.8}
                   className={`flex-row items-center p-5 border-2 ${openSection === section.id ? 'bg-primary border-primary shadow-[4px_4px_0px_0px_rgb(var(--success))]' : 'bg-card border-muted'}`}
                 >
-                  <Text className={`text-2xl font-black mr-4 ${openSection === section.id ? 'text-primary' : 'text-border'}`}>
+                  {/* FIXED: Section number contrast on active accordion */}
+                  <Text className={`text-2xl font-black mr-4 ${openSection === section.id ? 'text-primary-foreground/50' : 'text-border'}`}>
                     {(idx + 1).toString().padStart(2, '0')}
                   </Text>
-                  {/* CHANGED: tracking-widest is safer than arbitrary em */}
                   <Text className={`text-[11px] font-black uppercase tracking-widest flex-1 ${openSection === section.id ? 'text-primary-foreground' : 'text-foreground'}`}>
                     {section.name}
                   </Text>
@@ -108,8 +107,9 @@ export default function Tutorials({ navigation, route }) {
         ) : (
           <View>
             <View className="flex-row items-center mb-8">
+              {/* FIXED: NODE_ID badge text-primary -> text-primary-foreground */}
               <View className="bg-primary px-3 py-1 border border-primary">
-                <Text className="text-[8px] font-black text-primary uppercase tracking-widest">NODE_ID: {String(selectedChapter.id).split('-')[0]}</Text>
+                <Text className="text-[8px] font-black text-primary-foreground uppercase tracking-widest">NODE_ID: {String(selectedChapter.id).split('-')[0]}</Text>
               </View>
               <View className="ml-6 flex-row items-center">
                 <Clock size={12} className="text-subtle" />
@@ -143,9 +143,10 @@ export default function Tutorials({ navigation, route }) {
               activeOpacity={0.9}
               className="bg-primary h-24 w-full flex-row items-center justify-center border-b-8 border-subtle shadow-2xl"
             >
-              <Play fill="currentColor" size={24} className="text-primary" />
-              {/* CHANGED: tracking-[0.2em] -> tracking-[2px] */}
-              <Text className="ml-4 text-foreground font-black uppercase tracking-[2px] italic text-lg">Initialize_Lecture</Text>
+              <Play fill="currentColor" size={24} className="text-primary-foreground" />
+              <Text className="ml-4 text-primary-foreground font-black uppercase tracking-[2px] italic text-lg">
+                Initialize_Lecture
+              </Text>
             </TouchableOpacity>
           </View>
         )}

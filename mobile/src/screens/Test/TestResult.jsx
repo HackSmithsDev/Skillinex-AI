@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, SafeAreaView, ScrollView } from 'react-na
 import { Trophy, RotateCcw, BookOpen, Zap, Target, ShieldCheck } from "lucide-react-native";
 
 export default function TestResult({ navigation, route }) {
-  // Pulling score from params or defaulting to 80
   const syncScore = route.params?.score ?? 0;
   const xpGained = route.params?.xp ?? 0;
   const hits = route.params?.hits ?? "0/0";
@@ -16,16 +15,22 @@ export default function TestResult({ navigation, route }) {
         
         <View className="items-center justify-center flex-1">
           {/* 1. THE ARCHITECTURAL BADGE */}
+          {/* FIXED: Trophy uses text-highlight (gold) or text-primary-foreground on dark container */}
           <View 
-            className={`${isHighSync ? 'bg-primary' : 'bg-primary'} p-10 mb-12 border-b-[16px] border-r-[16px] border-primary shadow-2xl`}
+            className="bg-primary p-10 mb-12 border-b-[16px] border-r-[16px] border-primary shadow-2xl"
           >
-            <Trophy size={80} strokeWidth={2.5} className={isHighSync ? "text-primary" : "text-primary-foreground"} />
+            <Trophy 
+              size={80} 
+              strokeWidth={2.5} 
+              className={isHighSync ? "text-highlight" : "text-primary-foreground"} 
+            />
           </View>
 
           {/* 2. THE DATA READOUT */}
           <View className="items-center mb-16">
+            {/* FIXED: ShieldCheck icon text-primary -> text-primary-foreground */}
             <View className="flex-row items-center justify-center bg-primary px-3 py-1 mb-4 border-l-4 border-primary">
-              <ShieldCheck size={12} strokeWidth={3} className="text-primary" />
+              <ShieldCheck size={12} strokeWidth={3} className="text-primary-foreground" />
               <Text className="ml-2 text-[10px] font-black text-primary-foreground uppercase tracking-[0.3em]">Neural_Sync_Stable</Text>
             </View>
             
@@ -62,7 +67,7 @@ export default function TestResult({ navigation, route }) {
           <View className="w-full space-y-6">
             <TouchableOpacity 
               activeOpacity={0.9}
-              onPress={() => navigation.navigate('Tutorials')} // Navigates back to curriculum
+              onPress={() => navigation.navigate('Tutorials')}
               className="bg-primary h-20 items-center justify-center flex-row border-b-8 border-primary shadow-xl"
             >
               <BookOpen size={20} className="text-primary-foreground" />
@@ -70,9 +75,9 @@ export default function TestResult({ navigation, route }) {
             </TouchableOpacity>
 
             <TouchableOpacity 
-              onPress={() => navigation.navigate('UserHome')}
+              onPress={() => navigation.navigate('MainTabs', { screen: 'HOME' })}
               activeOpacity={0.7}
-              className="border-4 border-primary h-16 items-center justify-center flex-row shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+              className="border-4 border-primary h-16 items-center justify-center flex-row shadow-[4px_4px_0px_0px_rgb(var(--primary))] bg-card"
             >
               <RotateCcw size={18} className="text-primary" />
               <Text className="ml-3 text-foreground font-black uppercase tracking-[0.2em] italic text-xs">Re-initialize_Terminal</Text>

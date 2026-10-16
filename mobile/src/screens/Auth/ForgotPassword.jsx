@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   View, Text, TextInput, TouchableOpacity, 
-  ScrollView, KeyboardAvoidingView, Platform, StyleSheet, ActivityIndicator 
+  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator 
 } from 'react-native';
 import { KeyRound, ArrowRight, Mail, ChevronLeft, ShieldCheck } from 'lucide-react-native';
 
@@ -19,8 +19,12 @@ export default function ForgotPassword({ navigation }) {
 
   const requestCode = async () => {
     const target = email.toLowerCase().trim();
-    if (!target) { setError('Email required'); return; }
-    setLoading(true); setError('');
+    if (!target) { 
+      setError('Email required'); 
+      return; 
+    }
+    setLoading(true); 
+    setError('');
     try {
       await authService.forgotPassword(target);
       setEmail(target);
@@ -33,7 +37,10 @@ export default function ForgotPassword({ navigation }) {
   };
 
   const verifyCode = () => {
-    if (code.length !== 6) { setError('Enter the 6-digit code'); return; }
+    if (code.length !== 6) { 
+      setError('Enter the 6-digit code'); 
+      return; 
+    }
     setError('');
     navigation.navigate('ResetPassword', { email, code });
   };
@@ -43,11 +50,12 @@ export default function ForgotPassword({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-card"
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="px-8 pt-16">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="px-8 pt-16" keyboardShouldPersistTaps="handled">
         
         {/* 1. TOP NAVIGATION */}
         <TouchableOpacity 
           onPress={() => step === 2 ? setStep(1) : navigation.goBack()}
+          activeOpacity={0.7}
           className="mb-10 w-12 h-12 border-2 border-primary items-center justify-center bg-card shadow-[2px_2px_0px_0px_rgb(var(--primary))]"
         >
           <ChevronLeft size={24} strokeWidth={3} className="text-primary" />
@@ -80,8 +88,11 @@ export default function ForgotPassword({ navigation }) {
         {/* 3. INPUT CONFIGURATION */}
         <View>
           {error ? (
-            <Text className="text-danger font-black text-[10px] uppercase tracking-widest mb-4">{error}</Text>
+            <View className="bg-danger-subtle border-2 border-danger p-4 mb-6">
+              <Text className="text-danger font-black text-[10px] uppercase tracking-widest text-center">{error}</Text>
+            </View>
           ) : null}
+
           {step === 1 ? (
             <View>
               <Text className="text-[8px] font-black text-subtle uppercase tracking-[2px] mb-2 ml-1">Email_Address</Text>
@@ -92,7 +103,8 @@ export default function ForgotPassword({ navigation }) {
                 <TextInput
                   placeholder="name@domain.com"
                   placeholderClassName="text-line-strong"
-                  autoCapitalize="none" // FOR RELIABILITY
+                  autoCapitalize="none"
+                  autoCorrect={false}
                   keyboardType="email-address"
                   className="bg-card border-2 border-primary h-16 pl-12 pr-4 font-bold text-foreground text-sm shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
                   onChangeText={setEmail}
@@ -103,10 +115,15 @@ export default function ForgotPassword({ navigation }) {
               <TouchableOpacity 
                 onPress={requestCode}
                 disabled={loading}
+                activeOpacity={0.8}
                 className="bg-primary h-16 mt-10 flex-row items-center justify-center border-b-8 border-primary active:bg-primary-hover"
               >
                 <Text className="text-primary-foreground font-black uppercase italic tracking-widest mr-2">Request_Link</Text>
-                {loading ? <ActivityIndicator color={colors['primary-foreground']} /> : <ArrowRight size={18} className="text-primary-foreground" />}
+                {loading ? (
+                  <ActivityIndicator color={colors['primary-foreground'] || '#FAFAFA'} />
+                ) : (
+                  <ArrowRight size={18} className="text-primary-foreground" />
+                )}
               </TouchableOpacity>
             </View>
           ) : (
@@ -115,7 +132,8 @@ export default function ForgotPassword({ navigation }) {
               <TextInput
                 placeholder="000000"
                 placeholderClassName="text-border"
-                className="bg-surface border-2 border-primary h-24 text-center font-black text-foreground tracking-[0.5em] text-4xl shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
+                autoFocus={true}
+                className="bg-card border-2 border-primary h-24 text-center font-black text-foreground tracking-[0.5em] text-4xl shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
                 maxLength={6}
                 keyboardType="number-pad"
                 onChangeText={setCode}
@@ -124,13 +142,15 @@ export default function ForgotPassword({ navigation }) {
 
               <TouchableOpacity 
                 onPress={verifyCode}
-                className="bg-primary h-16 mt-10 flex-row items-center justify-center border-b-8 border-subtle"
+                activeOpacity={0.8}
+                className="bg-primary h-16 mt-10 flex-row items-center justify-center border-b-8 border-primary"
               >
                 <Text className="text-primary-foreground font-black uppercase italic tracking-widest">Verify_Identity</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                onPress={() => setStep(1)}
+                onPress={() => { setError(''); setStep(1); }}
+                activeOpacity={0.7}
                 className="mt-6 py-2 self-center"
               >
                 <Text className="text-subtle font-black uppercase text-[10px] tracking-widest text-center">

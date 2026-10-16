@@ -80,7 +80,6 @@ export default function LearningVault({ navigation }) {
               Learning{'\n'}Vault
             </Text>
           </View>
-          
         </View>
         <Text className="text-xs text-muted-foreground font-bold leading-5">
           Welcome back, {user?.full_name?.split(' ')[0] || 'Operator'}. Your neural pathways are ready for synchronization.
@@ -120,7 +119,7 @@ export default function LearningVault({ navigation }) {
               <View className="h-2 bg-muted w-full">
                 <View 
                   className="h-2" 
-                  style={{ width: `${Math.round(course.progress || 0)}%`, backgroundColor: course.accent }} 
+                  style={{ width: `${Math.round(course.progress || 0)}%`, backgroundColor: course.accent || 'rgb(var(--primary))' }} 
                 />
               </View>
             </View>

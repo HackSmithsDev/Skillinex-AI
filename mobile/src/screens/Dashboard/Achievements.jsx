@@ -1,14 +1,13 @@
 import React, { useContext, useState, useCallback } from 'react';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Trophy, Flame, Target, Code2, Brain, Zap, Activity, ChevronRight } from "lucide-react-native";
+import { Trophy, Flame, Target, Brain, Zap, Activity, ChevronRight } from 'lucide-react-native';
 import { AuthContext } from '../../context/AuthContext';
 import userService from '../../api/userService';
 import useThemeColors from '../../theme/useThemeColors';
 
 export default function Achievements() {
   const { user } = useContext(AuthContext);
-
   const colors = useThemeColors();
   const [data, setData] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -31,9 +30,14 @@ export default function Achievements() {
     <ScrollView
       className="flex-1 bg-card"
       showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={refreshing} tintColor={colors.primary} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}
+      refreshControl={
+        <RefreshControl 
+          refreshing={refreshing} 
+          tintColor={colors.primary} 
+          onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} 
+        />
+      }
     >
-      
       {/* 1. SYSTEM HEADER */}
       <View className="px-6 pt-16 pb-8 border-b-4 border-primary">
         <View className="flex-row items-center mb-3">
@@ -43,7 +47,6 @@ export default function Achievements() {
           </Text>
         </View>
         
-        {/* Main Title */}
         <Text className="text-7xl font-black uppercase italic tracking-tighter leading-[0.75] text-foreground">
           SKILL{'\n'}
           <Text className="text-border">_LOG</Text>
@@ -73,7 +76,10 @@ export default function Achievements() {
           </Text>
         </View>
 
-        {skills.length === 0 && <Text className="text-[10px] font-black uppercase text-subtle mb-6">No_Tests_Logged_Yet</Text>}
+        {skills.length === 0 && (
+          <Text className="text-[10px] font-black uppercase text-subtle mb-6">No_Tests_Logged_Yet</Text>
+        )}
+        
         {skills.map((skill, i) => (
           <View key={i} className="mb-10">
             <View className="flex-row justify-between items-end mb-3">
@@ -83,12 +89,10 @@ export default function Achievements() {
                 </View>
                 <Text className="text-xs font-black uppercase italic text-foreground">{skill.name}</Text>
               </View>
-              <Text className="text-[10px] font-black text-subtle">LVL_{skill.level}</Text>
+              <Text className="text-[10px] font-black text-foreground">LVL_{skill.level}</Text>
             </View>
             
-            {/* Progress Bar Container */}
             <View className="h-5 bg-muted border-2 border-primary shadow-[4px_4px_0px_0px_rgb(var(--primary))] overflow-hidden">
-              {/* Width is set via standard style prop for stability */}
               <View 
                 style={{ width: `${skill.xp}%` }}
                 className="h-full bg-primary border-r-2 border-primary"

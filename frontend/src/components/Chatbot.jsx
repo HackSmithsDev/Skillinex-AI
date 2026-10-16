@@ -21,7 +21,7 @@ export default function Chatbot({ isOpen, onClose, lectureTitle }) {
     if (isOpen && !sessionId) {
       const initChat = async () => {
         try {
-          const res = await api.post("/api/sessions", { 
+          const res = await api.post("/ai/sessions", { 
             title: `Mentorship: ${lectureTitle || "New Node"}` 
           });
           setSessionId(res.data.id);
@@ -43,7 +43,7 @@ export default function Chatbot({ isOpen, onClose, lectureTitle }) {
     setLoading(true);
 
     try {
-      const res = await api.post("/api/message", {
+      const res = await api.post("/ai/message", {
         content: input,
         session_id: sessionId
       });

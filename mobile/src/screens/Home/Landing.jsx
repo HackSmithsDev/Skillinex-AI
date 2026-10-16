@@ -62,10 +62,12 @@ export default function Landing() {
               className="h-20 flex-row items-center justify-between px-8 border-4 border-primary bg-primary mb-6 shadow-[8px_8px_0px_0px_rgb(var(--primary))]"
             >
               <View className="flex-row items-center">
-                <Rocket size={24} strokeWidth={2.5} className="text-primary" />
-                <Text className="ml-4 text-xl font-black uppercase tracking-tighter italic text-foreground">Initialize</Text>
+                <Rocket size={24} strokeWidth={2.5} className="text-primary-foreground" />
+                <Text className="ml-4 text-xl font-black uppercase tracking-tighter italic text-primary-foreground">
+                  Initialize
+                </Text>
               </View>
-              <ChevronRight size={24} strokeWidth={3} className="text-primary" />
+              <ChevronRight size={24} strokeWidth={3} className="text-primary-foreground" />
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -73,7 +75,9 @@ export default function Landing() {
               activeOpacity={0.7}
               className="h-16 flex-row items-center justify-center border-2 border-primary bg-transparent"
             >
-              <Text className="text-sm font-black uppercase tracking-[2px] text-foreground">Access Dashboard</Text>
+              <Text className="text-sm font-black uppercase tracking-[2px] text-foreground">
+                Access Dashboard
+              </Text>
             </TouchableOpacity>
           </View>
 

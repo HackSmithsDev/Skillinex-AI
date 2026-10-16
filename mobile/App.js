@@ -1,7 +1,5 @@
-import "./global.css";
-import "./src/theme/interop";
 import React, { useContext } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -16,15 +14,13 @@ import {
 import { AuthProvider, AuthContext } from './src/context/AuthContext';
 import { useThemeColors } from './src/theme/useThemeColors';
 
-// --- SCREEN IMPORTS ---
-// Auth Flow
+// Screen Imports
 import Landing from './src/screens/Home/Landing';
 import Login from './src/screens/Auth/Login';
 import Signup from './src/screens/Auth/Signup';
 import ForgotPassword from './src/screens/Auth/ForgotPassword';
 import ResetPassword from './src/screens/Auth/ResetPassword';
 
-// Dashboard & Core
 import UserHome from './src/screens/Home/UserHome';
 import LearningVault from './src/screens/Tutorials/LearningVault';
 import Tutorials from './src/screens/Tutorials/Tutorials';
@@ -39,9 +35,8 @@ import Profile from './src/screens/Dashboard/Profile';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// 1. TOP BAR COMPONENT (The Persistent Identity)
 const SkillinexHeader = ({ navigation }) => (
-  <SafeAreaView className="bg-card border-b-4 border-primary">
+  <SafeAreaView edges={['top']} className="bg-card border-b-4 border-primary">
     <View className="px-6 py-4 flex-row justify-between items-center">
       <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'HOME' })}>
         <Text className="text-2xl font-black italic tracking-tighter text-foreground">
@@ -49,7 +44,6 @@ const SkillinexHeader = ({ navigation }) => (
         </Text>
       </TouchableOpacity>
       
-      {/* Profile Node Link */}
       <TouchableOpacity 
         onPress={() => navigation.navigate('Profile')}
         className="h-10 w-10 bg-card border-2 border-primary justify-center items-center shadow-[3px_3px_0px_0px_rgb(var(--primary))]"
@@ -60,7 +54,6 @@ const SkillinexHeader = ({ navigation }) => (
   </SafeAreaView>
 );
 
-// 2. MAIN NAVIGATION (The 5-Tab Command Center)
 function MainTabs({ navigation }) {
   const colors = useThemeColors();
   return (
@@ -114,18 +107,22 @@ function MainTabs({ navigation }) {
   );
 }
 
-// 3. ROOT NAVIGATION (The Logic Switch)
 function RootNavigator() {
   const { user, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-background justify-center items-center">
+        <ActivityIndicator size="large" color="rgb(15, 23, 43)" />
+      </View>
+    );
+  }
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
-        // PROTECTED PROTOCOL (User Authenticated)
         <>
           <Stack.Screen name="MainTabs" component={MainTabs} />
-          
-          {/* Detailed View Stack (Hides Bottom Tabs for Focus) */}
           <Stack.Screen name="Tutorials" component={Tutorials} />
           <Stack.Screen name="Lecture" component={Lecture} />
           <Stack.Screen name="QuizSession" component={QuizSession} />
@@ -133,7 +130,6 @@ function RootNavigator() {
           <Stack.Screen name="Profile" component={Profile} />
         </>
       ) : (
-        // PUBLIC PROTOCOL (Authentication Required)
         <>
           <Stack.Screen name="Landing" component={Landing} />
           <Stack.Screen name="Login" component={Login} />
@@ -148,7 +144,7 @@ function RootNavigator() {
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AuthProvider>
         <NavigationContainer>
           <RootNavigator />

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { 
   View, Text, TextInput, TouchableOpacity, 
-  ScrollView, KeyboardAvoidingView, Platform, StyleSheet 
+  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator 
 } from 'react-native';
 import { ShieldCheck, Lock, Eye, EyeOff, AlertCircle, ChevronLeft } from 'lucide-react-native';
 
 import authService from '../../api/authService';
 import { errorMessage } from '../../api/axios';
+import useThemeColors from '../../theme/useThemeColors';
 
 export default function ResetPassword({ navigation, route }) {
   const { email, code } = route.params || {};
@@ -14,6 +15,7 @@ export default function ResetPassword({ navigation, route }) {
   const [showPass, setShowPass] = useState(false);
   const [formData, setFormData] = useState({ password: '', confirm: '' });
   const [error, setError] = useState('');
+  const colors = useThemeColors();
 
   const handleReset = async () => {
     if (formData.password !== formData.confirm) {
@@ -58,7 +60,8 @@ export default function ResetPassword({ navigation, route }) {
         {/* 2. SYSTEM OVERWRITE HEADER */}
         <View className="bg-primary p-8 mb-10 border-b-8 border-primary shadow-xl">
           <View className="flex-row items-center justify-between">
-            <ShieldCheck size={40} className="text-primary" />
+            {/* FIXED: text-primary -> text-primary-foreground */}
+            <ShieldCheck size={40} className="text-primary-foreground" />
             <View className="bg-primary/10 px-2 py-1 border border-primary/30">
               <Text className="text-[8px] font-black text-success uppercase tracking-widest">Auth_Level: 04</Text>
             </View>
@@ -66,7 +69,7 @@ export default function ResetPassword({ navigation, route }) {
           <Text className="text-5xl font-black uppercase italic tracking-tighter text-primary-foreground mt-6 leading-[0.85]">
             SECURE{'\n'}RESET
           </Text>
-          <Text className="text-[10px] font-black uppercase tracking-[2px] text-success/60 mt-4">
+          <Text className="text-[10px] font-black uppercase tracking-[2px] text-success mt-4">
             Task: Alpha_Key_Overwrite
           </Text>
         </View>
@@ -129,12 +132,20 @@ export default function ResetPassword({ navigation, route }) {
             activeOpacity={0.9}
             className="bg-primary h-20 mt-4 items-center justify-center border-b-8 border-primary shadow-2xl"
           >
-            <Text className="text-primary-foreground font-black uppercase italic tracking-widest text-lg">Update_Protocol</Text>
+            {loading ? (
+              <ActivityIndicator color={colors['primary-foreground'] || '#FAFAFA'} />
+            ) : (
+              <Text className="text-primary-foreground font-black uppercase italic tracking-widest text-lg">
+                Update_Protocol
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
 
         <View className="mt-12 items-center">
-            <Text className="text-[8px] font-black text-line-strong uppercase tracking-widest">System_Encryption_Active_AES256</Text>
+          <Text className="text-[8px] font-black text-line-strong uppercase tracking-widest">
+            System_Encryption_Active_AES256
+          </Text>
         </View>
 
       </ScrollView>

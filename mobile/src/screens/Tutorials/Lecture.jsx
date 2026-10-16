@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, Alert, ActivityIndicator, SafeAreaView } from 'react-native';
 import { 
   PlayCircle, FileText, Bot, 
-  Clock, ArrowLeft, Layers, Zap, Sparkles, ChevronRight, CheckCircle 
+  Clock, ArrowLeft, Layers, Zap, Sparkles, CheckCircle 
 } from "lucide-react-native";
 import tutorialService from '../../api/tutorialService';
 import { errorMessage } from '../../api/axios';
@@ -30,7 +30,7 @@ export default function LectureView({ navigation, route }) {
         ]);
         if (!active) return;
         setLecture(lec);
-        const section = course.sections?.find((x) => x.id === sectionId);
+        const section = course?.sections?.find((x) => x.id === sectionId);
         setPlaylist(section?.chapters || []);
       } catch (e) {
         console.log('Lecture sync failed', e?.message);
@@ -53,24 +53,42 @@ export default function LectureView({ navigation, route }) {
     }
   };
 
-  const videoUri = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(lecture?.video_query || '')}`;
-
-  // Robust back handler
   const handleGoBack = () => {
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
-      // Fallback if there is no history stack
-      navigation.navigate('Tutorials'); 
+      navigation.navigate('Tutorials', { courseId });
     }
   };
 
+  const videoUri = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(lecture?.video_query || '')}`;
+
   return (
-    <View className="flex-1 bg-card">
-      {/* 1. CINEMATIC VIDEO STAGE */}
+    <SafeAreaView className="flex-1 bg-card">
+      {/* 1. PERSISTENT TOP HUD HEADER (Guarantees Back Button is Accessible & Clickable) */}
+      <View className="px-6 py-3 bg-card border-b-2 border-primary flex-row items-center justify-between">
+        <TouchableOpacity 
+          onPress={handleGoBack}
+          activeOpacity={0.7}
+          className="flex-row items-center bg-surface px-3 py-1.5 border-2 border-primary shadow-[2px_2px_0px_0px_rgb(var(--primary))]"
+        >
+          <ArrowLeft size={16} strokeWidth={3} className="text-primary" />
+          <Text className="ml-2 text-[10px] font-black uppercase tracking-[2px] text-foreground">
+            Index
+          </Text>
+        </TouchableOpacity>
+
+        <View className="bg-primary px-3 py-1 border border-primary">
+          <Text className="text-[8px] font-black text-primary-foreground uppercase tracking-widest">
+            {lecture?.title ? lecture.title.slice(0, 24) + '...' : 'ACTIVE_NODE'}
+          </Text>
+        </View>
+      </View>
+
+      {/* 2. CINEMATIC VIDEO STAGE */}
       <View 
         style={{ width, height: width * 0.56 }} 
-        className="bg-primary overflow-hidden border-b-8 border-primary shadow-2xl z-50"
+        className="bg-primary overflow-hidden border-b-4 border-primary"
       >
         <WebView 
           javaScriptEnabled={true}
@@ -79,26 +97,15 @@ export default function LectureView({ navigation, route }) {
           source={{ uri: videoUri }} 
           style={{ flex: 1, backgroundColor: colors.inverse }}
         />
-        
-        {/* Floating Back Button - Fixed Z-Index and Touch Area */}
-        <View className="absolute top-10 left-6">
-           <TouchableOpacity 
-            onPress={handleGoBack}
-            activeOpacity={0.7}
-            style={{ elevation: 10 }}
-            className="h-12 w-12 bg-inverse/80 items-center justify-center border-2 border-primary/50 rounded-none shadow-lg"
-          >
-            <ArrowLeft size={22} strokeWidth={3} className="text-primary" />
-          </TouchableOpacity>
-        </View>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* 2. HUD & METADATA */}
+        {/* 3. HUD & METADATA */}
         <View className="p-8 border-b-4 border-primary">
           <View className="flex-row items-center justify-between mb-6">
+            {/* FIXED: Layers text-primary -> text-primary-foreground */}
             <View className="flex-row items-center bg-primary px-4 py-2 border-l-4 border-primary">
-              <Layers size={14} className="text-primary" />
+              <Layers size={14} className="text-primary-foreground" />
               <Text className="ml-3 text-[10px] font-black text-primary-foreground uppercase tracking-[2px]">SYNC_NODE</Text>
             </View>
             <View className="bg-surface px-3 py-1 border border-success-soft">
@@ -114,11 +121,12 @@ export default function LectureView({ navigation, route }) {
             <Text className="text-xs text-soft font-bold leading-5">{lecture?.raw_text}</Text>
           </View>
 
+          {/* Complete Module Button */}
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={handleComplete}
             disabled={completing}
-            className="bg-success h-16 mb-4 flex-row items-center justify-center border-b-8 border-primary"
+            className="bg-success h-16 mb-4 flex-row items-center justify-center border-b-8 border-primary active:border-b-2 active:translate-y-1"
           >
             {completing
               ? <ActivityIndicator color={colors['primary-foreground']} />
@@ -126,17 +134,17 @@ export default function LectureView({ navigation, route }) {
             <Text className="ml-4 text-primary-foreground font-black uppercase tracking-[3px] italic text-xs">Complete_Module</Text>
           </TouchableOpacity>
 
-          {/* AI TUTOR ACTION */}
+          {/* FIXED: AI Tutor Action Bot icon text-primary -> text-primary-foreground */}
           <TouchableOpacity 
             activeOpacity={0.9}
             className="bg-primary h-16 flex-row items-center justify-center border-b-8 border-success active:border-b-2 active:translate-y-1"
           >
-            <Bot size={22} strokeWidth={2.5} className="text-primary" />
+            <Bot size={22} strokeWidth={2.5} className="text-primary-foreground" />
             <Text className="ml-4 text-primary-foreground font-black uppercase tracking-[3px] italic text-xs">Query_AI_Mentor</Text>
           </TouchableOpacity>
         </View>
 
-        {/* 3. SESSION BRIEFING */}
+        {/* 4. SESSION BRIEFING */}
         <View className="p-8 space-y-6">
           <View className="flex-row gap-4">
             <View className="flex-1 bg-primary p-6 items-center border-b-8 border-primary">
@@ -149,8 +157,9 @@ export default function LectureView({ navigation, route }) {
             </View>
           </View>
 
+          {/* FIXED: System Protocol Card Sparkles text-primary -> text-success */}
           <View className="bg-primary border-2 border-primary p-5 flex-row items-center">
-            <Sparkles size={20} className="text-primary" />
+            <Sparkles size={20} className="text-success" />
             <View className="ml-4 flex-1">
               <Text className="text-[10px] font-black text-success uppercase tracking-[2px]">System_Protocol</Text>
               <Text className="text-[11px] font-bold text-primary-foreground italic mt-1 leading-4">
@@ -160,7 +169,7 @@ export default function LectureView({ navigation, route }) {
           </View>
         </View>
 
-        {/* 4. SECTION STACK (Playlist) */}
+        {/* 5. SECTION STACK (Playlist) */}
         <View className="px-8 pb-20">
           <View className="flex-row items-center justify-between mb-8">
             <Text className="text-[12px] font-black text-foreground uppercase tracking-[5px]">Section_Stack</Text>
@@ -182,10 +191,7 @@ export default function LectureView({ navigation, route }) {
               <View className={`h-12 w-12 items-center justify-center border-2 ${
                 item.id === lectureId ? 'bg-primary border-card' : 'bg-surface border-border'
               }`}>
-                {true ? 
-                  <PlayCircle size={24} className={item.id === lectureId ? "text-primary-foreground" : "text-primary"} /> : 
-                  <FileText size={24} className={item.id === lectureId ? "text-primary-foreground" : "text-primary"} />
-                }
+                <PlayCircle size={24} className={item.id === lectureId ? "text-primary-foreground" : "text-primary"} />
               </View>
               <View className="ml-6 flex-1">
                 <Text className={`text-[12px] font-black uppercase italic leading-tight ${
@@ -206,6 +212,6 @@ export default function LectureView({ navigation, route }) {
           ))}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

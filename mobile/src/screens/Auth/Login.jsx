@@ -7,6 +7,7 @@ import {
 import { Lock, Mail, Eye, EyeOff, ChevronRight } from 'lucide-react-native';
 import authService from '../../api/authService';
 import { AuthContext } from '../../context/AuthContext';
+import useThemeColors from '../../theme/useThemeColors';
 
 export default function Login({ navigation }) {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -15,6 +16,7 @@ export default function Login({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   
   const { login } = useContext(AuthContext);
+  const colors = useThemeColors();
 
   const handleSubmit = async () => {
     if (!formData.email || !formData.password) {
@@ -43,7 +45,7 @@ export default function Login({ navigation }) {
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="px-8 pt-20">
         
-        {/* BRANDING HEADER - Keeps the Brutalist uppercase aesthetic */}
+        {/* BRANDING HEADER */}
         <View className="mb-12">
           <Text className="text-5xl font-black uppercase italic tracking-[-2px] text-foreground leading-[0.9]">
             System{'\n'}<Text className="text-primary">Access</Text>
@@ -64,7 +66,6 @@ export default function Login({ navigation }) {
 
         {/* FORM FIELDS */}
         <View>
-          
           {/* Email Input */}
           <View className="relative mb-6">
             <View className="absolute left-4 top-5 z-10">
@@ -73,10 +74,9 @@ export default function Login({ navigation }) {
             <TextInput
               placeholder="Email Address"
               placeholderClassName="text-subtle"
-              // Removed 'uppercase' class so user sees exactly what they type
               className="bg-surface border-2 border-primary h-16 pl-12 pr-4 font-black text-foreground italic text-xs shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
               keyboardType="email-address"
-              autoCapitalize="none" // Prevents auto-cap of first letter
+              autoCapitalize="none"
               autoCorrect={false}
               onChangeText={(val) => setFormData({...formData, email: val})}
               value={formData.email}
@@ -93,7 +93,6 @@ export default function Login({ navigation }) {
               placeholder="User Password"
               placeholderClassName="text-subtle"
               secureTextEntry={!showPassword}
-              // Removed 'uppercase' class
               className="bg-surface border-2 border-primary h-16 pl-12 pr-12 font-black text-foreground italic text-xs shadow-[4px_4px_0px_0px_rgb(var(--primary))]"
               autoCapitalize="none"
               onChangeText={(val) => setFormData({...formData, password: val})}
@@ -124,7 +123,7 @@ export default function Login({ navigation }) {
               ${loading ? 'opacity-70' : 'opacity-100'}`}
           >
             {loading ? (
-              <ActivityIndicator className="text-primary-foreground" />
+              <ActivityIndicator color={colors['primary-foreground'] || '#FAFAFA'} />
             ) : (
               <>
                 <Text className="text-primary-foreground font-black uppercase italic text-lg tracking-[-1px] mr-2">

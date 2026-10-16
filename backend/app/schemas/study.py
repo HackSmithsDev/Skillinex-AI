@@ -27,6 +27,13 @@ class UserEnvironmentOut(BaseModel):
 
 # --- Practice Records (Lecture Completion) ---
 
+class LabVerifyRequest(BaseModel):
+    task_id: str
+    course_id: str | None = None
+    success: bool = True
+
+    model_config = ConfigDict(from_attributes=True)
+
 class PracticeRecordCreate(BaseModel):
     lecture_id: UUID
     time_spent_seconds: int = 0

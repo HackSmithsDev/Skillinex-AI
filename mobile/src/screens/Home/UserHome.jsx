@@ -58,12 +58,19 @@ export default function UserHome({ navigation }) {
             onPress={() => navigation.navigate('LOG')}
           >
             <Trophy size={16} className="text-highlight" />
-            <Text className="ml-2 font-black text-[10px] uppercase">{(stats?.totalXP ?? 0).toLocaleString()} XP</Text>
+            {/* FIXED: added text-foreground */}
+            <Text className="ml-2 font-black text-[10px] uppercase text-foreground">
+              {(stats?.totalXP ?? 0).toLocaleString()} XP
+            </Text>
           </TouchableOpacity>
           
-          <TouchableOpacity onPress={openCourse} className="flex-1 h-12 bg-primary border-2 border-primary flex-row items-center justify-center">
-            <Zap size={16} className="text-primary" />
-            <Text className="ml-2 font-black text-[10px] uppercase">Resume</Text>
+          {/* FIXED: added flex-1 and onPress */}
+          <TouchableOpacity 
+            onPress={openCourse} 
+            className="flex-1 h-12 bg-primary border-2 border-primary flex-row items-center justify-center"
+          >
+            <Zap size={16} className="text-primary-foreground" />
+            <Text className="ml-2 font-black text-[10px] uppercase text-primary-foreground">Resume</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -79,8 +86,9 @@ export default function UserHome({ navigation }) {
           <View className="absolute inset-0 items-center justify-center bg-primary/10">
             <PlayCircle size={60} strokeWidth={1.5} className="text-primary-foreground" />
           </View>
+          {/* FIXED: added text-primary-foreground */}
           <View className="absolute top-4 right-4 bg-primary px-3 py-1 border-2 border-primary">
-            <Text className="text-[10px] font-black uppercase italic">{course.difficulty}</Text>
+            <Text className="text-[10px] font-black uppercase italic text-primary-foreground">{course.difficulty}</Text>
           </View>
         </TouchableOpacity>
 
@@ -106,11 +114,13 @@ export default function UserHome({ navigation }) {
           <View className="flex-row justify-between items-center opacity-60">
             <View className="flex-row items-center">
               <Clock size={12} className="text-primary" />
-              <Text className="ml-1 text-[10px] font-bold uppercase">{course.timeLeft} left</Text>
+              {/* FIXED: added text-foreground */}
+              <Text className="ml-1 text-[10px] font-bold uppercase text-foreground">{course.timeLeft} left</Text>
             </View>
             <View className="flex-row items-center">
               <BookOpen size={12} className="text-primary" />
-              <Text className="ml-1 text-[10px] font-bold uppercase">{course.completedLectures}/{course.totalLectures} Lectures</Text>
+              {/* FIXED: added text-foreground */}
+              <Text className="ml-1 text-[10px] font-bold uppercase text-foreground">{course.completedLectures}/{course.totalLectures} Lectures</Text>
             </View>
           </View>
         </View>
@@ -171,7 +181,6 @@ export default function UserHome({ navigation }) {
   );
 }
 
-// Internal Goal Component
 const GoalItem = ({ label, done, border = true }) => (
   <View className={`flex-row items-center p-4 ${border ? 'border-b-2 border-primary' : ''}`}>
     <View className={`w-5 h-5 border-2 border-primary mr-4 items-center justify-center ${done ? 'bg-primary' : 'bg-card'}`}>
