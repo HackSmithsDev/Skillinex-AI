@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 def test_health_route_returns_backend_status(client):
     response = client.get("/")
 
@@ -14,3 +17,9 @@ def test_openapi_registers_mobile_and_study_routes(client):
     assert "/ai/message" in paths
     assert "/study/practice/execute" in paths
     assert "/study/test/generate" in paths
+
+
+def test_uploads_mount_uses_backend_uploads_directory(app):
+    uploads_mount = next(route for route in app.routes if route.name == "uploads")
+
+    assert Path(uploads_mount.app.directory) == Path(__file__).resolve().parents[1] / "uploads"

@@ -18,8 +18,8 @@ backend/**/*.pyc
 **/.venv/
 **/venv/
 
-# --- Runtime-generated data (recreated on boot) ---
-data/
+# --- Runtime-generated uploads (recreated on boot) ---
+backend/uploads/
 
 # --- Build artifacts not needed as build input ---
 frontend/dist/

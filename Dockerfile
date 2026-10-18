@@ -38,9 +38,8 @@ RUN pip install --upgrade pip \
 
 # Copy Application Source
 COPY backend/ ./backend/
-# data/ is intentionally not copied — it's runtime-generated storage, created on boot
-# by app/__init__.py, and excluded from the build context via .dockerignore.
-RUN mkdir -p ./data/profile_pics ./data/roadmaps
+# backend/uploads/ is intentionally not copied; app startup creates its directories.
+RUN mkdir -p ./backend/uploads/profile_pics ./backend/uploads/roadmaps
 COPY --from=frontend-builder /build/frontend/dist ./frontend/dist
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY start.sh /app/start.sh

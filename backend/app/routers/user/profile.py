@@ -1,5 +1,5 @@
-import os
 import uuid
+from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from anyio.to_thread import run_sync
@@ -10,14 +10,9 @@ from pydantic import BaseModel, Field
 from app.core.security import get_current_user, get_password_hash, verify_password
 from app.schemas.user import UserOut, UserUpdate, PasswordChange, AccountDeleteRequest
 from app.workers.tasks.email import send_reset_success_email, send_delete_account_email, send_support_ticket_email
+from app.core.storage import PROFILE_PICS_DIR
 
 router = APIRouter()
-
-# ⚡ RESOLVE PATH TO ROOT-LEVEL data/profile_pics 
-# backend/app/routers/user/profile.py -> app/routers/user/ -> app/routers/ -> app/ -> backend/ -> project_root/data/profile_pics
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(CURRENT_DIR))))
-UPLOAD_DIR = os.path.join(PROJECT_ROOT, "data", "profile_pics")
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
@@ -58,10 +53,10 @@ async def upload_avatar(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Validates, streams, and saves the initial profile picture to the root data folder.
+    Validates, streams, and saves the profile picture to backend/uploads.
     """
     # 1. Secure and isolate file signatures
-    file_ext = os.path.splitext(file.filename)[1].lower()
+    file_ext = Path(file.filename or "").suffix.lower()
     if file_ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -69,11 +64,11 @@ async def upload_avatar(
         )
 
     # 2. Build local directories dynamically safely
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    PROFILE_PICS_DIR.mkdir(parents=True, exist_ok=True)
 
     # 3. Prevent structural path collisions with randomized UUID wrappers
     unique_filename = f"{current_user.id}_{uuid.uuid4().hex}{file_ext}"
-    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    file_path = PROFILE_PICS_DIR / unique_filename
 
     try:
         # Stream file payload into memory cache
@@ -92,7 +87,6 @@ async def upload_avatar(
         )
 
     # 4. Commit relative network path references to state engine model layers
-    # Your static mount inside app/__init__.py translates "/uploads" into the "data/" root directory.
     current_user.photo_url = f"/uploads/profile_pics/{unique_filename}"
     
     db.add(current_user)

@@ -1,6 +1,6 @@
-import os
 import json
 import uuid
+from pathlib import Path
 import random
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form
 from fastapi.security import OAuth2PasswordRequestForm
@@ -22,13 +22,10 @@ from app.workers.tasks.email import (
     send_login_alert, 
     send_reset_success_email
 )
+from app.core.storage import PROFILE_PICS_DIR
 
 router = APIRouter()
 
-# Isolate path calculations cleanly to resolve your project root data shared volume directories
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(CURRENT_DIR))))
-UPLOAD_DIR = os.path.join(PROJECT_ROOT, "data", "profile_pics")
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
 
@@ -99,7 +96,7 @@ async def signup(
     """
     Register a brand new user profile matrix using multipart form parameters.
     Processes account details, deserializes the tech stack graph, handles initial
-    avatar file uploads to root-level disk streams, and queues roadmap generations.
+    avatar file uploads to backend storage, and queues roadmap generations.
     """
     # 1. Identity Uniqueness Verification Check
     result = await db.execute(select(User).where(User.email == email))
@@ -119,7 +116,7 @@ async def signup(
     # 4. Process Multi-Part Avatar File Upload Streams if Present
     photo_url_path = None
     if file:
-        file_ext = os.path.splitext(file.filename)[1].lower()
+        file_ext = Path(file.filename or "").suffix.lower()
         if file_ext not in ALLOWED_EXTENSIONS:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -127,12 +124,12 @@ async def signup(
             )
         
         # Ensure targeted shared volume folders exist
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        PROFILE_PICS_DIR.mkdir(parents=True, exist_ok=True)
         
         # Generate pristine tracking IDs to decouple assets from system directory namespace conflicts
         generated_uuid = uuid.uuid4().hex
         unique_filename = f"signup_{generated_uuid}{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, unique_filename)
+        file_path = PROFILE_PICS_DIR / unique_filename
 
         try:
             contents = await file.read()

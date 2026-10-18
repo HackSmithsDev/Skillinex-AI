@@ -16,12 +16,12 @@ services:
         value: "https://skillinex.hacksmiths.dev"
       - key: CLOUDFLARE_TUNNEL_TOKEN
         sync: false
-      # Neon pooled connection string (postgresql://...?sslmode=require&channel_binding=require)
+      # Neon pooled connection string (postgresql+asyncpg://... or postgresql://...?sslmode=require)
       - key: DATABASE_URL
         sync: false
       - key: SECRET_KEY
         sync: false
-      # Upstash Redis (rediss://...) — used by Celery broker/backend and OTP/session cache
+      # Upstash Redis (rediss://...)
       - key: REDIS_URL
         sync: false
       - key: GROQ_API_KEY
@@ -35,7 +35,7 @@ services:
       - key: MAIL_FROM
         sync: false
       - key: MAIL_FROM_NAME
-        value: "HackSmiths Official"
+        value: "Skillinex AI Official"
       - key: MAIL_SERVER
         value: "smtpout.secureserver.net"
       - key: MAIL_PORT
@@ -45,4 +45,4 @@ services:
       - key: MAIL_USE_SSL
         value: "True"
       - key: ADMIN_EMAIL
-        value: "admin@hacksmiths.dev"
+        sync: false

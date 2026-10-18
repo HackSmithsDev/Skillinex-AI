@@ -1,4 +1,3 @@
-import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -12,6 +11,7 @@ from app.routers.study import router as study_router
 from app.routers.ai import router as ai_router
 from app.routers.courses import router as courses_router
 from app.core.config import settings
+from app.core.storage import PROFILE_PICS_DIR, ROADMAPS_DIR, UPLOADS_DIR
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -45,16 +45,10 @@ def create_app() -> FastAPI:
         )
 
     # 3. Static Files Mount
-    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-    PROJECT_ROOT = os.path.dirname(os.path.dirname(CURRENT_DIR))
-    DATA_DIR = os.path.join(PROJECT_ROOT, "data")
-    PROFILE_PICS_DIR = os.path.join(DATA_DIR, "profile_pics")
-    ROADMAPS_DIR = os.path.join(DATA_DIR, "roadmaps")
+    PROFILE_PICS_DIR.mkdir(parents=True, exist_ok=True)
+    ROADMAPS_DIR.mkdir(parents=True, exist_ok=True)
 
-    os.makedirs(PROFILE_PICS_DIR, exist_ok=True)
-    os.makedirs(ROADMAPS_DIR, exist_ok=True)
-
-    app.mount("/uploads", StaticFiles(directory=DATA_DIR), name="uploads")
+    app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
     # 4. Routers
     app.include_router(auth_router, prefix="/auth", tags=["Authentication"])

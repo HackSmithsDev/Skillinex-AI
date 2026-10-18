@@ -8,6 +8,8 @@ __pycache__/
 venv/
 ENV/
 .env
+.env.*
+!.env.example
 instance/
 .webassets-cache
 
@@ -40,6 +42,7 @@ expo-env.d.ts
 .metro-health-check*
 
 # debug
+*.log
 npm-debug.*
 yarn-debug.*
 yarn-error.*
@@ -58,12 +61,17 @@ yarn-error.*
 /ios
 /android
 
-# runtime-generated storage (profile pics, cached AI roadmaps) — recreated automatically on boot
-data/
+# runtime-generated storage (profile pics, cached AI roadmaps)
+/backend/uploads/
 
 # Celery runtime artifacts
 celerybeat-schedule
 celerybeat.pid
+
+# Test and coverage output
+.pytest_cache/
+.coverage
+htmlcov/
 
 # misc local docs/assets not meant for the repo
 _DOCS/

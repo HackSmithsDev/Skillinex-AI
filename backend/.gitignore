@@ -1,5 +1,7 @@
 # Environment Variables & Secrets (CRITICAL)
 .env
+.env.*
+!.env.example
 .env.local
 *.pem
 *.key
@@ -23,6 +25,9 @@ venv.bak/
 # FastAPI / Uvicorn Logs & Temp Files
 *.log
 logs/
+
+# Runtime-generated uploads
+uploads/
 
 # Build & Package Outputs
 build/

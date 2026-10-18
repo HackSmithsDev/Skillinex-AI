@@ -1,16 +1,37 @@
-# React + Vite
+# Web frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The web client is a React single-page application built with Vite. Its source
+is under `src/`; API requests are centralized in `src/api/axios.js`, and the
+feature screens are grouped under `src/pages/`.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 20
+- npm
+- The Skillinex backend running locally or a reachable deployed API
 
-## React Compiler
+## Local development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+From this directory:
 
-## Expanding the ESLint configuration
+```bash
+npm ci
+cp .env.example .env.local
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Set `VITE_API_URL` in `.env.local` to the backend base URL. The example file
+uses `http://localhost:8008`, matching the backend's local example
+configuration. Vite prints the web client URL when the dev server starts.
+
+## Available commands
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Vite development server |
+| `npm run lint` | Run ESLint |
+| `npm run build` | Create the production bundle in `dist/` |
+| `npm run preview` | Preview a previously built bundle |
+
+The production Docker image runs `npm ci` and `npm run build`, then serves the
+result through nginx. Do not commit `.env.local`, `node_modules/`, or `dist/`.
