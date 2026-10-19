@@ -72,6 +72,3 @@ celerybeat.pid
 .pytest_cache/
 .coverage
 htmlcov/
-
-# misc local docs/assets not meant for the repo
-_DOCS/
